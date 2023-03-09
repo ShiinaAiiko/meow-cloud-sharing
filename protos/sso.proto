@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "./;protos";
+package sso;
+
+message CreateAppToken {
+  message Request {
+    string appId = 1;
+  }
+  message Response {
+    string token = 1;
+    int64 createTime = 2;
+  }
+}

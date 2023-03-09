@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option go_package = "./;protos";
+package saass;
+// import "user.proto";
+
+message GetAppToken {
+  message Request {}
+  message Response {
+    string baseUrl = 1;
+    string appToken = 2;
+  }
+}

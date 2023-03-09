@@ -1,0 +1,48 @@
+syntax = "proto3";
+package file;
+
+option go_package = "./;protos";
+
+message FileInfo {
+  string name = 1;
+  int64 size = 2;
+  string type = 3;
+  string suffix = 4;
+  int64 lastModified = 5;
+  string hash = 6;
+}
+message FileUrls {
+  string domainUrl = 1;
+  string encryptionUrl = 2;
+  string url = 3;
+}
+
+message GetUploadFileToken {
+  message Request { FileInfo fileInfo = 1; }
+  message Response {
+    FileUrls urls = 1;
+    string apiUrl = 2;
+    string token = 3;
+    int64 chunkSize = 4;
+    repeated int64 uploadedOffset = 5;
+  }
+}
+
+message GetCustomStickersUploadFileToken {
+  message Request {
+    int64 size = 1;
+    string hash = 2;
+  }
+  message Response {
+    FileUrls urls = 1;
+    string apiUrl = 2;
+    string token = 3;
+    int64 chunkSize = 4;
+    repeated int64 uploadedOffset = 5;
+  }
+}
+
+message GetCustomStickersFileUrl {
+  message Request {}
+  message Response { string url = 1; }
+}

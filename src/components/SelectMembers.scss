@@ -1,0 +1,41 @@
+.select-members-component {
+	width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+	.ngd-title {
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		padding: 30px 20px 0;
+		.title {
+			font-size: 16px;
+		}
+		.count {
+			margin-left: 10px;
+			color: #999;
+			font-size: 13px;
+		}
+	}
+	.ngd-search {
+		border-bottom: 1px solid #eee;
+		padding: 10px 12px 0;
+	}
+	.ngd-select-contacts {
+		display: flex;
+		justify-content: flex-start;
+		flex-wrap: wrap;
+		padding: 10px 12px 0;
+	}
+	.ngd-contacts {
+    flex: 1;
+	}
+	.ngd-buttons {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		margin-top: 20px;
+		padding: 0 20px 30px;
+	}
+}

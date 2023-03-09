@@ -1,0 +1,31 @@
+.contacts-page {
+	.cp-add-contact-button {
+		display: flex;
+		span {
+			color: #666;
+			font-size: 14px;
+			margin-left: 4px;
+		}
+	}
+	.contact-list-page {
+    .clp-contact-icons{
+      display: flex;
+      
+    }
+	}
+	.group-page {
+    .clp-contact-icons{
+      display: flex;
+      
+    }
+	}
+}
+
+.cp-add-contact-item {
+	display: flex;
+	justify-content: flex-start;
+	saki-icon {
+		width: 24px;
+    margin-top: 2px;
+	}
+}

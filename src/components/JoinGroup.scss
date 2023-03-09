@@ -1,0 +1,16 @@
+.join-group-component {
+	width: 100%;
+	padding: 0px 20px 20px;
+	saki-modal-header {
+		width: 100%;
+	}
+	.jgd-input {
+		width: 100%;
+	}
+	.jgd-buttons {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		margin-top: 20px;
+	}
+}

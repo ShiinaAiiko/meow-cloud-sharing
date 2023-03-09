@@ -1,0 +1,69 @@
+@import '../assets/style/editor.scss';
+.cp-main {
+	position: relative;
+	.message-m-bottom {
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+
+		.bottom-new-message {
+			position: absolute;
+			right: 0;
+			top: 0;
+			width: 10px;
+			height: 10px;
+			background-color: var(--default-color);
+			border-radius: 50%;
+			z-index: 1000;
+		}
+	}
+}
+.message-inputbar-emoji {
+	width: 300px;
+	height: 400px;
+	// background-color: #eee;
+	.message-emoji-item {
+		display: flex;
+	}
+	saki-tabs {
+		flex: 1;
+	}
+}
+
+.message-input-bar {
+  // background-color: #f1f3f4;
+  width: 100%;
+  padding: 0 10px;
+  margin: 10px 0 20px;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  .message-inputbar-input {
+    flex: 1;
+    padding: 14px 16px;
+    background-color: rgb(243, 243, 243);
+    border-radius: 25px;
+  }
+  .message-left-buttons {
+    display: flex;
+    margin-bottom: 4px;
+  }
+  .message-right-buttons {
+    display: flex;
+    margin-bottom: 4px;
+  }
+}
+
+.mie-emoji-page {
+	.mie-e-list {
+		padding: 0 10px;
+		.mie-e-category {
+      margin-bottom: 10px;
+			.mie-e-c-list {
+				display: flex;
+				flex-wrap: wrap;
+			}
+		}
+	}
+}

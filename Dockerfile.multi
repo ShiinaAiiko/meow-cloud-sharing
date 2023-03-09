@@ -1,0 +1,42 @@
+FROM node:16.15.1 as BUILD_IMAGE
+
+WORKDIR /app
+
+ENV CLIENT_ENV=production
+ENV PUBLIC_URL='/'
+# ENV NODE_ENV=production
+
+COPY .yarnrc .npmrc /root/
+COPY package.json yarn.lock ./
+
+RUN \
+  yarn 
+
+COPY . .
+
+RUN \
+  cp -r ./config.pro.temp.json ./src/config.temp.json && \
+  yarn protos && \
+  yarn build && \
+  wget https://saki-ui.aiiko.club/saki-ui.tgz && \
+  tar zxvf ./saki-ui.tgz -C ./build && \
+  rm -rf ./saki-ui* 
+
+FROM node:16.13.1-alpine3.13
+
+ENV CLIENT_ENV=production
+
+WORKDIR /
+
+COPY --from=BUILD_IMAGE \
+  /app/build \
+  /dist
+
+RUN \ 
+  npm config set registry https://registry.npmmirror.com && \
+  yarn global add spa-http-server
+
+EXPOSE 16101
+
+CMD ["http-server","./dist","--cors","--silent","-p","16101","--push-state"]
+

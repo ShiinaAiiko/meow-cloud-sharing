@@ -1,0 +1,230 @@
+syntax = "proto3";
+
+option go_package = "./;protos";
+package user;
+
+message StrangerUserInfo {
+  int64 uid = 1;
+  int64 email = 2;
+  string avatar = 3;
+  string nickname = 4;
+  string username = 5;
+  string bio = 6;
+  bool isAdded = 7;
+}
+
+message FriendLogUserInfo {
+  int64 uid = 1;
+  string avatar = 2;
+  string nickname = 3;
+  string username = 4;
+}
+// 日常好友信息
+message FriendUserInfo {
+  int64 uid = 1;
+  string avatar = 2;
+  string nickname = 3;
+  string username = 4;
+  string letter = 5;
+  string email = 6;
+  string bio = 7;
+}
+// 房间用户信息
+message RoomUserInfo {
+  int64 uid = 1;
+  string avatar = 2;
+  string nickname = 3;
+  string username = 4;
+  string letter = 5;
+  string email = 6;
+  string bio = 7;
+}
+// 匿名用户信息
+// message AnonymousUserInfo {
+//   string AppId = 1;
+//   string uid = 2;
+//   string nickname = 3;
+//   string avatar = 4;
+//   string bio = 5;
+//   string additionalInformation = 6;
+//   int64 status = 7;
+//   int64 createTime = 8;
+//   int64 deleteTime = 9;
+// }
+message SimpleSSOUserInfo {
+  string uid = 1;
+  string username = 7;
+  string nickname = 2;
+  string avatar = 3;
+  string bio = 4;
+  string letter = 5;
+  int64 lastSeenTime = 6;
+}
+message SSOUserInfo {
+  string uid = 1;
+  string username = 2;
+  string email = 3;
+  string phone = 4;
+  string nickname = 5;
+  string avatar = 6;
+  string bio = 7;
+  repeated string city = 8;
+  // -1 | 1 | 2 | 3 | 4 | 5
+  int64 gender = 9;
+  string birthday = 10;
+	// -1 | 0 | 1
+  int64 status = 11;
+  message AdditionalInformation {
+  }
+  AdditionalInformation additionalInformation = 12;
+  message AppData {
+  }
+  AppData appData = 13;
+  int64 creationTime = 14;
+  int64 lastUpdateTime = 15;
+  int64 lastSeenTime = 16;
+}
+
+message UpdateLoginUserProfile {
+  message Request {
+    string userToken = 1;
+    string avatar = 2;
+    string username = 3;
+    string nickname = 4;
+    string bio = 5;
+  }
+  message Response {
+    string deviceId = 1;
+    string token = 2;
+    user.SSOUserInfo userInfo = 3;
+  }
+}
+
+message UpdateAnonymousUserProfile {
+  message Request {
+    string userToken = 1;
+    string avatar = 2;
+    string username = 3;
+    string nickname = 4;
+    string bio = 5;
+  }
+  message Response {
+    string deviceId = 1;
+    string token = 2;
+    user.SSOUserInfo userInfo = 3;
+  }
+}
+
+message GetAnonymousUserTokenByCloneUserData {
+  message Request {
+    string cloneUserToken = 1;
+    string cloneUserDeviceId = 2;
+  }
+  message Response {
+    string deviceId = 1;
+    string token = 2;
+    user.SSOUserInfo userInfo = 3;
+  }
+}
+
+message UserAgent {
+  message Browser {
+    string name = 1;
+    string major = 2;
+    string version = 3;
+  }
+  message Device {
+    string model = 1;
+    string type = 2;
+    string vendor = 3;
+  }
+  message OS {
+    string name = 1;
+    string version = 2;
+  }
+  Browser browser = 1;
+  Device device = 2;
+  OS os = 3;
+  string deviceName = 4;
+}
+
+message OnlineDeviceList {
+  user.SSOUserInfo userInfo = 1;
+  int64 loginTime = 2;
+  UserAgent userAgent = 3;
+  string location = 4;
+  string deviceId = 5;
+}
+
+message OtherDeviceOnline {
+  message Request {}
+  message Response {
+    OnlineDeviceList currentDevice = 1;
+    repeated OnlineDeviceList onlineDeviceList = 2;
+  }
+}
+message OtherDeviceOffline {
+  message Request {}
+  message Response {
+    OnlineDeviceList currentDevice = 1;
+    repeated OnlineDeviceList onlineDeviceList = 2;
+  }
+}
+
+message SendMessagesToOtherDevices {
+  message Request {
+    string deviceId = 1;
+    string apiName = 2;
+    string data = 3;
+  }
+  message Response {}
+}
+
+message ReceiveMessagesFromOtherDevices {
+  message Request {}
+  message Response {
+    string deviceId = 1;
+    string apiName = 2;
+    string data = 3;
+  }
+}
+
+message CreateAccount {
+  message Request {
+    // required
+    string appId = 1;
+    // required
+    string appKey = 2;
+    // required
+    string uid = 3;
+    // optional
+    string password = 4;
+    // required
+    string nickname = 5;
+    // optional
+    string avatar = 6;
+  }
+  message Response {
+    string deviceId = 1;
+    string token = 2;
+    MWCUserInfo userInfo = 3;
+  }
+}
+
+message MWCToken {
+  string appId = 1;
+  string appKey = 2;
+  MWCUserInfo userInfo = 3;
+  UserAgent userAgent = 4;
+  string deviceId = 5;
+  string loginTime = 6;
+}
+
+message MWCUserInfo {
+  string uid = 1;
+  string nickname = 2;
+  string avatar = 3;
+  string bio = 4;
+  int64 status = 5;
+  int64 createTime = 6;
+}

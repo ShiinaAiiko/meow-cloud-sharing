@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+option go_package = "./;protos";
+package contact;
+import "user.proto";
+
+message Contact {
+  string id = 1;
+  message User {
+    string uid = 1;
+    string nickname = 2;
+    bool receiveMessage = 3;
+    // 只有对方才需要获取
+    user.SimpleSSOUserInfo userInfo = 4;
+  }
+  repeated User users = 2;
+  message Permissions { bool e2ee = 1; }
+  Permissions permissions = 3;
+  int64 status = 4;
+  int64 createTime = 5;
+  int64 lastSeenTime = 6;
+  string lastMessage = 7;
+  int64 lastMessageTime = 8;
+}
+
+message GetContactList {
+  message Request {}
+  message Response {
+    // Added/Waiting
+    repeated Contact list = 1;
+    int64 total = 2;
+  }
+}
+
+message SearchContact {
+  message Request {
+    // UID/Username
+    string userId = 1;
+  }
+  message Response {
+    user.SimpleSSOUserInfo userInfo = 1;
+    bool isFriend = 2;
+    string roomId = 3;
+  }
+}
+
+message SearchUserInfoList {
+  message Request { repeated string uid = 1; }
+  message Response {
+    repeated user.SimpleSSOUserInfo list = 1;
+    int64 total = 2;
+  }
+}
+
+message AddContact {
+  message Request {
+    // UID/Username
+    string userId = 1;
+    string remark = 2;
+  }
+  message Response {
+    // Added/Waiting
+    string type = 1;
+    string roomId = 2;
+    string uid = 3;
+  }
+}
+
+message DeleteContact {
+  message Request { string uid = 1; }
+  message Response { string roomId = 1; }
+}
+
+// socket router
+message UpdateContactStatus {
+  message Response {
+    // type: Add/Delete
+    string type = 1;
+    string roomId = 2;
+    string uid = 3;
+  }
+}
