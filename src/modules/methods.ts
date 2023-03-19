@@ -223,6 +223,7 @@ export const moveToTrash = ({
 	if (files.length) {
 		v += files.length + '个文件'
 	}
+	if (!v) return
 	alert({
 		title: t('moveToTrash'),
 		content: '确定将这' + v + '移入回收站吗？',
@@ -300,9 +301,12 @@ export const restore = ({
 	if (files.length) {
 		v += files.length + '个文件'
 	}
+	if (!v) return
 	alert({
-		title: t('restore'),
-		content: '确定将这' + v + '恢复吗？',
+		title: t('restore', {
+			ns: 'common',
+		}),
+		content: '确定将' + v + '恢复吗？',
 		cancelText: t('cancel', {
 			ns: 'common',
 		}),

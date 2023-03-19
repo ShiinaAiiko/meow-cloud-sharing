@@ -13,9 +13,11 @@
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			& > span {
+				max-width: 120px;
+			}
 			span {
 				word-break: break-all;
-				max-width: 120px;
 			}
 		}
 	}

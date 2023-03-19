@@ -187,7 +187,11 @@ const FileListComponent = ({
 										></saki-table-header-item>
 										<saki-table-header-item width={'auto'} height='36px'>
 											<div className='ip-th-item'>
-												<span>名称</span>
+												<span>
+													{t('name', {
+														ns: 'myFilesPage',
+													})}
+												</span>
 
 												<saki-button
 													ref={bindEvent({
@@ -225,7 +229,11 @@ const FileListComponent = ({
 										{showFolderPath ? (
 											<saki-table-header-item width={'auto'} height='36px'>
 												<div className='ip-th-item'>
-													<span>文件夹</span>
+													<span>
+														{t('folder', {
+															ns: 'common',
+														})}
+													</span>
 												</div>
 											</saki-table-header-item>
 										) : (
@@ -235,7 +243,11 @@ const FileListComponent = ({
 										config.deviceType === 'PC' ? (
 											<saki-table-header-item width={'140px'} height='36px'>
 												<div className='ip-th-item'>
-													<span>修改时间</span>
+													<span>
+														{t('lastModified', {
+															ns: 'myFilesPage',
+														})}
+													</span>
 													<saki-button
 														ref={bindEvent({
 															tap: () => {
@@ -276,7 +288,11 @@ const FileListComponent = ({
 										{showDeleteTime ? (
 											<saki-table-header-item width={'140px'} height='36px'>
 												<div className='ip-th-item'>
-													<span>删除时间</span>
+													<span>
+														{t('deletedTime', {
+															ns: 'myFilesPage',
+														})}
+													</span>
 												</div>
 												<saki-button
 													ref={bindEvent({
@@ -317,7 +333,11 @@ const FileListComponent = ({
 										{config.deviceType !== 'Mobile' ? (
 											<saki-table-header-item width={'100px'} height='36px'>
 												<div className='ip-th-item'>
-													<span>文件大小</span>
+													<span>
+														{t('fileSize', {
+															ns: 'myFilesPage',
+														})}
+													</span>
 
 													<saki-button
 														ref={bindEvent({
@@ -357,16 +377,24 @@ const FileListComponent = ({
 										{config.deviceType !== 'Mobile' ? (
 											<saki-table-header-item width={'80px'} height='36px'>
 												<div className='ip-th-item'>
-													<span>下载量</span>
+													<span>
+														{t('downloads', {
+															ns: 'myFilesPage',
+														})}
+													</span>
 												</div>
 											</saki-table-header-item>
 										) : (
 											''
 										)}
 										{showPermissions ? (
-											<saki-table-header-item width={'60px'} height='36px'>
+											<saki-table-header-item width={'80px'} height='36px'>
 												<div className='ip-th-item'>
-													<span>权限</span>
+													<span>
+														{t('permissions', {
+															ns: 'myFilesPage',
+														})}
+													</span>
 												</div>
 											</saki-table-header-item>
 										) : (
@@ -584,7 +612,7 @@ const FileListComponent = ({
 															)}
 															{showPermissions ? (
 																<saki-table-column-item
-																	width={'60px'}
+																	width={'80px'}
 																	height='30px'
 																>
 																	<div className='ip-tc-item'>
@@ -838,7 +866,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						在新标签页中打开
+						{t('newTab', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -853,7 +883,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						下载
+						{t('download', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -865,7 +897,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						分享
+						{t('share', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -877,7 +911,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						移动到
+						{t('moveTo', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -889,7 +925,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						复制到
+						{t('copyTo', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -901,7 +939,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						还原
+						{t('restore', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -913,7 +953,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						删除
+						{t('delete', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -925,7 +967,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						移入回收站
+						{t('moveToTrash', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -937,7 +981,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						重命名
+						{t('rename', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 				<saki-context-menu-item
@@ -949,7 +995,9 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						详细信息
+						{t('viewDetail', {
+							ns: 'common',
+						})}
 					</div>
 				</saki-context-menu-item>
 			</saki-context-menu>

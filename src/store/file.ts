@@ -313,9 +313,13 @@ export const fileMethods = {
 		const t = i18n.t
 		let v = fileName
 		prompt({
-			title: '重命名',
+			title:  t('rename', {
+				ns: 'common',
+			}),
 			value: v,
-			placeholder: '输入你的文件名',
+			placeholder:  t('typeFileName', {
+				ns: 'myFilesPage',
+			}),
 			cancelText: t('cancel', {
 				ns: 'common',
 			}),
@@ -326,7 +330,7 @@ export const fileMethods = {
 				// console.log(value, /^[\S]\x20{1,50}$/.test(value.trim()))
 				if (!/^[\s*\S+?]{1,50}$/.test(value.trim())) {
 					return t('lengthLimited1to50', {
-						ns: 'prompt',
+						ns: 'myFilesPage',
 					})
 				}
 				v = value.trim()
@@ -623,7 +627,7 @@ export const fileMethods = {
 							mp1.setInput({
 								label: 'password',
 								type: 'error',
-								v: t('passwordLengthLimited', {
+								v: t('passwordRule', {
 									ns: 'myFilesPage',
 								}),
 							})
@@ -645,7 +649,7 @@ export const fileMethods = {
 				{
 					label: 'randomPassword',
 					text: t('randomPassword', {
-						ns: 'common',
+						ns: 'myFilesPage',
 					}),
 					type: 'Normal',
 					async onTap() {

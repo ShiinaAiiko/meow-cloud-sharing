@@ -86,7 +86,9 @@ const PreviewFileComponent = () => {
 					},
 				})}
 				close-icon
-				title={'分享链接'}
+				title={t('shareLink', {
+					ns: 'myFilesPage',
+				})}
 			></saki-modal-header>
 			<div className='share-modal'>
 				<saki-title level='5' color='default' margin='0 0 10px 0'>
@@ -127,7 +129,9 @@ const PreviewFileComponent = () => {
 						font-size='14px'
 						type='Primary'
 					>
-						生成喵链接
+						{t('generalMeowLink', {
+							ns: 'myFilesPage',
+						})}
 					</saki-button>
 					{/* <saki-button
 						ref={bindEvent({
@@ -162,7 +166,9 @@ const PreviewFileComponent = () => {
 						font-size='14px'
 						type='Primary'
 					>
-						复制分享链接
+						{t('copyShareLink', {
+							ns: 'myFilesPage',
+						})}
 					</saki-button>
 				</div>
 			</div>

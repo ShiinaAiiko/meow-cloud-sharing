@@ -19,6 +19,7 @@ let nsocketio = {
 }
 let staticPathDomain = ''
 let networkTestUrl = ''
+let github = ''
 
 let sakiui = {
 	url: '',
@@ -64,6 +65,7 @@ interface Config {
 	sakiui: typeof sakiui
 	meowApps: typeof meowApps
 	meowWhisperCore: typeof meowWhisperCore
+	github: typeof github
 }
 // import configJson from './config.test.json'
 try {
@@ -83,6 +85,7 @@ try {
 		sakiui = configJson.sakiui
 		meowApps = configJson.meowApps
 		meowWhisperCore = configJson.meowWhisperCore
+		github = configJson.github
 	}
 } catch (error) {
 	console.log('未添加配置文件.')
@@ -101,4 +104,5 @@ export {
 	meowLinkApiUrl,
 	meowApps,
 	meowWhisperCore,
+	github,
 }

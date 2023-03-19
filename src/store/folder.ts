@@ -323,9 +323,13 @@ export const folderMethods = {
 		const t = i18n.t
 		let v = ''
 		prompt({
-			title: '新建文件夹',
+			title: t('newFolder', {
+				ns: 'myFilesPage',
+			}),
 			value: v,
-			placeholder: '输入你的文件夹名称',
+			placeholder: t('typeFolderName', {
+				ns: 'myFilesPage',
+			}),
 			cancelText: t('cancel', {
 				ns: 'common',
 			}),
@@ -336,7 +340,7 @@ export const folderMethods = {
 				// console.log(value, /^[\S]\x20{1,50}$/.test(value.trim()))
 				if (!/^[\s*\S+?]{1,50}$/.test(value.trim())) {
 					return t('lengthLimited1to50', {
-						ns: 'prompt',
+						ns: 'myFilesPage',
 					})
 				}
 				v = value.trim()
@@ -379,7 +383,9 @@ export const folderMethods = {
 		const t = i18n.t
 		let v = folderName
 		prompt({
-			title: '重命名',
+			title: t('rename', {
+				ns: 'common',
+			}),
 			value: v,
 			placeholder: '输入你的文件夹名称',
 			cancelText: t('cancel', {
@@ -392,7 +398,7 @@ export const folderMethods = {
 				// console.log(value, /^[\S]\x20{1,50}$/.test(value.trim()))
 				if (!/^[\s*\S+?]{1,50}$/.test(value.trim())) {
 					return t('lengthLimited1to50', {
-						ns: 'prompt',
+						ns: 'myFilesPage',
 					})
 				}
 				v = value.trim()
@@ -697,7 +703,7 @@ export const folderMethods = {
 							mp1.setInput({
 								label: 'password',
 								type: 'error',
-								v: t('passwordLengthLimited', {
+								v: t('passwordRule', {
 									ns: 'myFilesPage',
 								}),
 							})
@@ -719,7 +725,7 @@ export const folderMethods = {
 				{
 					label: 'randomPassword',
 					text: t('randomPassword', {
-						ns: 'common',
+						ns: 'myFilesPage',
 					}),
 					type: 'Normal',
 					async onTap() {

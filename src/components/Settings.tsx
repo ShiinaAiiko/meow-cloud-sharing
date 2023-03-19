@@ -12,7 +12,7 @@ import store, {
 import './Settings.scss'
 import { bindEvent } from '../modules/bindEvent'
 
-import { baseUrl, sakisso } from '../config'
+import { baseUrl, github, sakisso } from '../config'
 
 import moment from 'moment'
 
@@ -170,8 +170,8 @@ const SettingsItemList = ({ menuType }: { menuType: string }) => {
 				<Account show={menuType === 'Account'} />
 				<Language show={menuType === 'Language'} />
 				<Appearance show={menuType === 'Appearance'} />
-				<General show={menuType === 'General'} />
-				<Notification show={menuType === 'Notification'} />
+				{/* <General show={menuType === 'General'} /> */}
+				{/* <Notification show={menuType === 'Notification'} /> */}
 				<About show={menuType === 'About'} />
 			</saki-scroll-view>
 		</>
@@ -218,7 +218,7 @@ const SettingsNavList = ({
 					<span className='name'>{t('account')}</span>
 				</div>
 			</saki-menu-item>
-			<saki-menu-item
+			{/* <saki-menu-item
 				active={menuType === 'General'}
 				padding='16px 12px'
 				value='General'
@@ -242,8 +242,8 @@ const SettingsNavList = ({
 					</svg>
 					<span className='name'>{t('general')}</span>
 				</div>
-			</saki-menu-item>
-			<saki-menu-item
+			</saki-menu-item> */}
+			{/* <saki-menu-item
 				active={menuType === 'Notification'}
 				padding='16px 12px'
 				value='Notification'
@@ -259,7 +259,7 @@ const SettingsNavList = ({
 					</div>
 					<span className='name'>{t('notification')}</span>
 				</div>
-			</saki-menu-item>
+			</saki-menu-item> */}
 			<saki-menu-item
 				active={menuType === 'Language'}
 				padding='16px 12px'
@@ -467,25 +467,6 @@ const Account = ({ show }: { show: boolean }) => {
 								{t('bio')}
 							</saki-title>
 							<div>{userInfo.bio || t('nothingIsWritten')}</div>
-							<saki-title level='5' color='default' margin='10px 0'>
-								{t('link')}
-							</saki-title>
-							<div
-								ref={
-									bindEvent({
-										click: () => {
-											dispatch(
-												methods.tools.copy({
-													content: shareUrl,
-												})
-											)
-										},
-									}) as any
-								}
-								className='copytext'
-							>
-								{shortShareUrl}
-							</div>
 						</div>
 					</div>
 				) : (
@@ -859,7 +840,7 @@ const About = ({ show }: { show: boolean }) => {
 						<saki-button
 							ref={bindEvent({
 								tap: () => {
-									let url = 'https://github.com/ShiinaAiiko/meow-whisper-core'
+									let url = github
 									switch (config.platform) {
 										case 'Electron':
 											const { shell } = window.require('electron')

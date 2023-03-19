@@ -77,37 +77,37 @@ export const DetailComponent = () => {
 						},
 					})}
 				>
-					<saki-tabs-item font-size='14px' label='Detail' name={'详情'}>
+					<saki-tabs-item font-size='14px' label='Detail' name={t('detail')}>
 						<saki-scroll-view mode='Auto'>
 							<div>
 								{v?.type === 'File' ? (
 									<>
 										<saki-title margin='10px 0 6px' level='5' color='default'>
-											{'文件名'}
+											{t('fileName')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{v?.file?.fileName || ''}</span>
 										</div>
 										<saki-title margin='10px 0 6px' level='5' color='default'>
-											{'短ID'}
+											{t('shortId')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{v?.file?.shortId || ''}</span>
 										</div>
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											类型
+											{t('type')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{v?.file?.fileInfo?.type || ''}</span>
 										</div>
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											大小
+											{t('fileSize')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{byteConvert(v?.file?.fileInfo?.size || 0)}</span>
 										</div>
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											修改时间
+											{t('lastModified')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>
@@ -125,7 +125,7 @@ export const DetailComponent = () => {
 													level='5'
 													color='default'
 												>
-													宽度
+													{t('width')}
 												</saki-title>
 												<div className='dc-m-d-item'>
 													<span>{v?.file?.fileInfo?.width || ''}</span>
@@ -135,7 +135,7 @@ export const DetailComponent = () => {
 													level='5'
 													color='default'
 												>
-													高度
+													{t('height')}
 												</saki-title>
 												<div className='dc-m-d-item'>
 													<span>{v?.file?.fileInfo?.height || ''}</span>
@@ -145,7 +145,7 @@ export const DetailComponent = () => {
 											''
 										)}
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											哈希值
+											{t('hash')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{v?.file?.fileInfo?.hash || ''}</span>
@@ -157,19 +157,19 @@ export const DetailComponent = () => {
 								{v?.type === 'Folder' ? (
 									<>
 										<saki-title margin='10px 0 6px' level='5' color='default'>
-											{'文件夹名'}
+											{t('folderName')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{v?.folder?.folderName || ''}</span>
 										</div>
 										<saki-title margin='10px 0 6px' level='5' color='default'>
-											{'短ID'}
+											{t('shortId')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{v?.folder?.shortId || ''}</span>
 										</div>
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											修改时间
+											{t('lastModified')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>
@@ -189,13 +189,13 @@ export const DetailComponent = () => {
 							</div>
 						</saki-scroll-view>
 					</saki-tabs-item>
-					<saki-tabs-item font-size='14px' label='Statistics' name={'统计'}>
+					<saki-tabs-item font-size='14px' label='Statistics' name={t("statistics")}>
 						<saki-scroll-view mode='Auto'>
 							<div>
 								{v?.type === 'File' ? (
 									<>
 										<saki-title margin='10px 0 6px' level='5' color='default'>
-											下载量
+											{t('downloads')}
 										</saki-title>
 										<div className='dc-m-d-item'>
 											<span>{v?.file?.usage.visitCount || ''}</span>
@@ -207,16 +207,22 @@ export const DetailComponent = () => {
 							</div>
 						</saki-scroll-view>
 					</saki-tabs-item>
-					<saki-tabs-item font-size='14px' label='Permissions' name={'权限'}>
+					<saki-tabs-item font-size='14px' label='Permissions' name={t("permissions")}>
 						<saki-scroll-view mode='Auto'>
 							<div>
 								{v?.type === 'File' || v?.type === 'Folder' ? (
 									<>
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											共享
+											{t('share', {
+												ns: 'common',
+											})}
 										</saki-title>
 										<div className='dc-m-p-item'>
-											<span>{'下载权限'}</span>
+											<span>
+												{t('downloadPermission', {
+													ns: 'myFilesPage',
+												})}
+											</span>
 											<saki-dropdown
 												visible={openShareDropDownMenu}
 												floating-direction='Left'
@@ -240,8 +246,8 @@ export const DetailComponent = () => {
 														{(v.file?.availableRange.allowShare ||
 															v.folder?.availableRange.allowShare ||
 															-1) === -1
-															? '禁止其他人下载'
-															: '允许所有人下载'}
+															? t('unshare')
+															: t('allowSharing')}
 													</span>
 													<saki-icon
 														width='12px'
@@ -282,7 +288,7 @@ export const DetailComponent = () => {
 															value={1}
 														>
 															<div className='qv-h-r-u-item'>
-																<span>允许所有人下载</span>
+																<span>{t('allowSharing')}</span>
 															</div>
 														</saki-menu-item>
 														<saki-menu-item
@@ -291,7 +297,7 @@ export const DetailComponent = () => {
 															value={-1}
 														>
 															<div className='qv-h-r-u-item'>
-																<span>禁止其他人下载</span>
+																<span>{t('unshare')}</span>
 															</div>
 														</saki-menu-item>
 													</saki-menu>
@@ -305,13 +311,13 @@ export const DetailComponent = () => {
 								{v?.type === 'File' || v?.type === 'Folder' ? (
 									<>
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											密码
+											{t("password")}
 										</saki-title>
 										<div className='dc-m-p-item'>
 											<span>
 												{v.file?.availableRange.password ||
 													v.folder?.availableRange.password ||
-													'未设置密码'}
+													t("passwordNotSet")}
 											</span>
 
 											<saki-row>
@@ -342,7 +348,7 @@ export const DetailComponent = () => {
 														border='none'
 														type='Normal'
 													>
-														<span>删除密码</span>
+														<span>{t("deletePassword")}</span>
 													</saki-button>
 												) : (
 													''
@@ -350,7 +356,6 @@ export const DetailComponent = () => {
 												<saki-button
 													ref={bindEvent({
 														tap: () => {
-															console.log('更改密码')
 
 															if (v.type === 'Folder') {
 																dispatch(
@@ -372,10 +377,10 @@ export const DetailComponent = () => {
 													padding='6px 10px'
 													type='Primary'
 												>
-													<span>
+													<span >
 														{v.file?.availableRange.password
-															? '更改密码'
-															: '设置密码'}
+															? t("changePassword")
+															: t("setPassword")}
 													</span>
 												</saki-button>
 											</saki-row>

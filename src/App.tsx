@@ -84,7 +84,7 @@ export class NetworkStatus extends EventTarget {
 }
 
 function App() {
-  const params = useParams()
+	const params = useParams()
 	const [debounce] = useState(new Debounce())
 	// const location = useLocation()
 	const isDev = process.env.NODE_ENV === 'development'
@@ -106,10 +106,9 @@ function App() {
 			// await store.dispatch(methods.tools.init()).unwrap()
 			await store.dispatch(methods.config.Init()).unwrap()
 			// store.dispatch(methods.mwc.Init()).unwrap()
-			!downloadPage && (await store.dispatch(methods.user.Init()).unwrap())
+			await store.dispatch(methods.user.Init()).unwrap()
 			await store.dispatch(methods.sso.Init()).unwrap()
-			!downloadPage &&
-				(await store.dispatch(methods.user.checkToken()).unwrap())
+			await store.dispatch(methods.user.checkToken()).unwrap()
 			// dispatch(methods.appearance.Init()).unwrap()
 			// console.log('location', location)
 			// console.log('config.deviceType getDeviceType', config)

@@ -115,7 +115,9 @@ const HeaderComponent = () => {
 							},
 						})}
 						disable-open-web-page
-						language={i18n.language}
+						language={
+							config.language === 'system' ? i18n.language : config.language
+						}
 					/>
 				</div>
 

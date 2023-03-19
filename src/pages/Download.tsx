@@ -337,8 +337,20 @@ const DownloadPage = ({ children }: RouterProps) => {
 										}
 									></saki-avatar>
 									<span>
-										Shiina Aiiko 分享了一个加密
-										{type === 'File' ? '文件' : '文件夹'}
+										{t('sharedAnEncryptedContent', {
+											ns: 'downloadPage',
+										})
+											.replace('{{name}}', 'Shiina Aiiko')
+											.replace(
+												'{{type}}',
+												type === 'File'
+													? t('file', {
+															ns: 'common',
+													  })
+													: t('folder', {
+															ns: 'common',
+													  })
+											)}
 									</span>
 								</div>
 								{/* <div className='csc-m-i-desc'>
@@ -351,7 +363,9 @@ const DownloadPage = ({ children }: RouterProps) => {
 												setPassword(e.detail)
 											},
 										})}
-										placeholder='输入密码'
+										placeholder={t('password', {
+											ns: 'myFilesPage',
+										})}
 										border='2px solid var(--saki-default-color)'
 										padding='10px 14px'
 										height='40px'
@@ -374,12 +388,27 @@ const DownloadPage = ({ children }: RouterProps) => {
 										font-weight='700'
 										loading={loading}
 									>
-										获取{type === 'File' ? '文件' : '文件夹'}
+										{t('getContent', {
+											ns: 'downloadPage',
+										}).replace(
+											'{{type}}',
+											type === 'File'
+												? t('file', {
+														ns: 'common',
+												  })
+												: t('folder', {
+														ns: 'common',
+												  })
+										)}
 									</saki-button>
 								</div>
 							</div>
 						) : loading === false && !folder.fileTree['downloads']?.length ? (
-							<div className='dp-404'>当前分享不存在，请检查链接</div>
+							<div className='dp-404'>
+								{t('share404', {
+									ns: 'downloadPage',
+								})}
+							</div>
 						) : (
 							<div className='dp-main'>
 								<div className={'dp-m-header ' + config.deviceType}>
@@ -395,9 +424,20 @@ const DownloadPage = ({ children }: RouterProps) => {
 											}
 										></saki-avatar>
 										<span>
-											Shiina Aiiko 分享了{folder.fileTree['downloads']?.length}
-											个加密
-											{type === 'File' ? '文件' : '文件夹'}
+											{t('sharedAnEncryptedContent', {
+												ns: 'downloadPage',
+											})
+												.replace('{{name}}', 'Shiina Aiiko')
+												.replace(
+													'{{type}}',
+													type === 'File'
+														? t('file', {
+																ns: 'common',
+														  })
+														: t('folder', {
+																ns: 'common',
+														  })
+												)}
 										</span>
 									</div>
 									{config.deviceType !== 'Mobile' || true ? (
@@ -422,7 +462,9 @@ const DownloadPage = ({ children }: RouterProps) => {
 														color: 'var(--saki-default-color)',
 													}}
 												>
-													分享
+													{t('share', {
+														ns: 'common',
+													})}
 												</span>
 											</saki-button>
 											<saki-button
@@ -449,7 +491,10 @@ const DownloadPage = ({ children }: RouterProps) => {
 														whiteSpace: 'nowrap',
 													}}
 												>
-													下载 {'(' + downloadNum + ')'}
+													{t('download', {
+														ns: 'common',
+													})}{' '}
+													{'(' + downloadNum + ')'}
 												</span>
 											</saki-button>
 										</div>
@@ -506,7 +551,11 @@ const DownloadPage = ({ children }: RouterProps) => {
 															height='36px'
 														>
 															<div className='ip-th-item'>
-																<span>名称</span>
+																<span>
+																	{t('name', {
+																		ns: 'myFilesPage',
+																	})}
+																</span>
 															</div>
 														</saki-table-header-item>
 
@@ -515,7 +564,11 @@ const DownloadPage = ({ children }: RouterProps) => {
 															height='36px'
 														>
 															<div className='ip-th-item'>
-																<span>文件大小</span>
+																<span>
+																	{t('fileSize', {
+																		ns: 'myFilesPage',
+																	})}
+																</span>
 															</div>
 														</saki-table-header-item>
 													</saki-table-header>
@@ -696,7 +749,9 @@ const DownloadPage = ({ children }: RouterProps) => {
 												fontSize: '13px',
 											}}
 										>
-											在新标签页中打开
+											{t('newTab', {
+												ns: 'common',
+											})}
 										</div>
 									</saki-context-menu-item>
 									<saki-context-menu-item
@@ -711,7 +766,9 @@ const DownloadPage = ({ children }: RouterProps) => {
 												fontSize: '13px',
 											}}
 										>
-											下载
+											{t('download', {
+												ns: 'common',
+											})}
 										</div>
 									</saki-context-menu-item>
 								</saki-context-menu>

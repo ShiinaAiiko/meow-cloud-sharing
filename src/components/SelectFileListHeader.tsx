@@ -52,7 +52,9 @@ const SelectFileListHeaderComponent = () => {
 							margin='0 6px 0 0'
 							padding='6px 10px'
 						>
-							删除
+							{t('delete', {
+								ns: 'common',
+							})}
 						</saki-button>
 						<saki-button
 							ref={bindEvent({
@@ -76,7 +78,9 @@ const SelectFileListHeaderComponent = () => {
 							margin='0 6px 0 0'
 							padding='6px 10px'
 						>
-							还原
+							{t('restore', {
+								ns: 'common',
+							})}
 						</saki-button>
 					</>
 				) : (
@@ -108,7 +112,9 @@ const SelectFileListHeaderComponent = () => {
 							margin='0 6px 0 0'
 							padding='6px 10px'
 						>
-							移动到
+							{t('moveTo', {
+								ns: 'common',
+							})}
 						</saki-button>
 
 						<saki-button
@@ -138,7 +144,9 @@ const SelectFileListHeaderComponent = () => {
 							margin='0 6px 0 0'
 							padding='6px 10px'
 						>
-							复制到
+							{t('copyTo', {
+								ns: 'common',
+							})}
 						</saki-button>
 						<saki-button
 							ref={bindEvent({
@@ -162,7 +170,9 @@ const SelectFileListHeaderComponent = () => {
 							margin='0 6px 0 0'
 							padding='6px 10px'
 						>
-							移入回收站
+							{t('moveToTrash', {
+								ns: 'common',
+							})}
 						</saki-button>
 					</>
 				)}
@@ -185,7 +195,11 @@ const SelectFileListHeaderComponent = () => {
 							height='14px'
 							margin='2px 6px 0 0'
 						></saki-icon>
-						<span>已选择 {config.selectedFileList.length} 项</span>
+						<span>
+							{t('selectedItems', {
+								ns: 'myFilesPage',
+							}).replace('{{count}}', config.selectedFileList.length.toString())}
+						</span>
 					</saki-row>
 				</saki-button>
 			</div>

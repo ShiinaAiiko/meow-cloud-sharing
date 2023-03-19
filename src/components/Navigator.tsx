@@ -90,7 +90,9 @@ const NavigatorComponent = ({
 						margin='0 0 12px 0'
 						active={location.pathname === '/'}
 						icon-type={'FolderFill'}
-						name={'MY FILES'}
+						name={t('pageTitle', {
+							ns: 'myFilesPage',
+						}).toUpperCase()}
 						count={config.count.messages}
 						href='/'
 					></saki-chat-layout-side-navigator-menu-item>
@@ -98,7 +100,9 @@ const NavigatorComponent = ({
 						margin='0 0 12px 0'
 						active={location.pathname === '/recent'}
 						icon-type={'TimeFill'}
-						name={'RECENT'}
+						name={t('pageTitle', {
+							ns: 'recentPage',
+						}).toUpperCase()}
 						count={config.count.contacts}
 						href='/recent'
 					></saki-chat-layout-side-navigator-menu-item>
@@ -106,7 +110,9 @@ const NavigatorComponent = ({
 						margin='0 0 12px 0'
 						active={location.pathname === '/recyclebin'}
 						// icon-type={'TrashFill'}
-						name={'RECYCLE BIN'}
+						name={t('pageTitle', {
+							ns: 'recyclebinPage',
+						}).toUpperCase()}
 						count={config.count.notifications}
 						href='/recyclebin'
 					>
@@ -130,7 +136,9 @@ const NavigatorComponent = ({
 						active={false}
 						icon-type={'Settings'}
 						icon-size='20px'
-						name={'SETTINGS'}
+						name={t('title', {
+							ns: 'settings',
+						}).toUpperCase()}
 						href='/settings'
 					></saki-chat-layout-side-navigator-menu-item>
 				</div>

@@ -22,6 +22,7 @@ import store, {
 } from '../store'
 import { useTranslation } from 'react-i18next'
 import { bindEvent } from '@saki-ui/core'
+import { github } from '../config'
 
 const FooterComponent = (): JSX.Element => {
 	const { t, i18n } = useTranslation()
@@ -137,7 +138,7 @@ const FooterComponent = (): JSX.Element => {
 					<span> - </span>
 					<a
 						target='_blank'
-						href='https://github.com/ShiinaAiiko/meow-whisper-core'
+						href={github}
 					>
 						{/* {t('aiikoBlog', {
 												ns: 'common',

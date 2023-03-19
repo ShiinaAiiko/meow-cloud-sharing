@@ -101,7 +101,7 @@ const ChatLayout = ({ children }: RouterProps) => {
 				// dispatch(methods.nsocketio.Init()).unwrap()
 				// await mwc.sdk?.nsocketio.connect()
 				// await dispatch(methods.messages.init())
-				!downloadPage && (await dispatch(methods.saass.Init()))
+				await dispatch(methods.saass.Init())
 			} else {
 				// mwc.sdk?.nsocketio.disconnect()
 				// dispatch(methods.nsocketio.Close()).unwrap()
@@ -425,10 +425,10 @@ const ChatLayout = ({ children }: RouterProps) => {
 									{location.pathname.indexOf('/dl') !== 0 ? (
 										<div className={'cl-m-header ' + config.deviceType}>
 											<div className='cl-m-h-left'>
-												{(config.deviceType === 'Mobile' &&
-													location.pathname === '/') ||
-												location.pathname === '/recent' ||
-												location.pathname === '/recyclebin' ? (
+												{config.deviceType === 'Mobile' &&
+												(location.pathname === '/' ||
+													location.pathname === '/recent' ||
+													location.pathname === '/recyclebin') ? (
 													<saki-button
 														ref={bindEvent({
 															tap: () => {
@@ -608,7 +608,11 @@ const ChatLayout = ({ children }: RouterProps) => {
 																padding='6px 18px'
 																type='Primary'
 															>
-																<span className='text-elipsis'>新建</span>
+																<span className='text-elipsis'>
+																	{t('new', {
+																		ns: 'common',
+																	})}
+																</span>
 																<saki-icon
 																	width='12px'
 																	height='12px'
@@ -639,7 +643,11 @@ const ChatLayout = ({ children }: RouterProps) => {
 																		value={'Folder'}
 																	>
 																		<div className='qv-h-r-u-item'>
-																			<span>文件夹</span>
+																			<span>
+																				{t('folder', {
+																					ns: 'common',
+																				})}
+																			</span>
 																		</div>
 																	</saki-menu-item>
 																</saki-menu>
@@ -665,7 +673,11 @@ const ChatLayout = ({ children }: RouterProps) => {
 																padding='6px 18px'
 																type='Normal'
 															>
-																<span>上传</span>
+																<span>
+																	{t('upload', {
+																		ns: 'common',
+																	})}
+																</span>
 																<saki-icon
 																	width='12px'
 																	height='12px'
@@ -700,7 +712,11 @@ const ChatLayout = ({ children }: RouterProps) => {
 																		value={'File'}
 																	>
 																		<div className='qv-h-r-u-item'>
-																			<span>文件</span>
+																			<span>
+																				{t('file', {
+																					ns: 'common',
+																				})}
+																			</span>
 																		</div>
 																	</saki-menu-item>
 																</saki-menu>
@@ -729,7 +745,11 @@ const ChatLayout = ({ children }: RouterProps) => {
 															margin='0 6px 0 0'
 															type='Primary'
 														>
-															<span className='text-elipsis'>清空回收站</span>
+															<span className='text-elipsis'>
+																{t('emptyRecycleBin', {
+																	ns: 'myFilesPage',
+																})}
+															</span>
 														</saki-button>
 														<saki-button
 															ref={bindEvent({
@@ -747,7 +767,11 @@ const ChatLayout = ({ children }: RouterProps) => {
 															padding='6px 18px'
 															type='Primary'
 														>
-															<span className='text-elipsis'>还原所有项目</span>
+															<span className='text-elipsis'>
+																{t('restoreAllItems', {
+																	ns: 'myFilesPage',
+																})}
+															</span>
 														</saki-button>
 													</>
 												) : (

@@ -205,7 +205,13 @@ const CopyFilesComponent = () => {
 				})}
 				close-icon={folderPath === '/'}
 				back-icon={folderPath !== '/'}
-				title={folderPath === '/' ? '我的文件' : folderPath}
+				title={
+					folderPath === '/'
+						? t('pageTitle', {
+								ns: 'myFilesPage',
+						  })
+						: folderPath
+				}
 			></saki-modal-header>
 			<div className={'copy-files-component '}>
 				<div className='cfc-folders'>
@@ -369,8 +375,12 @@ const CopyFilesComponent = () => {
 						}
 					>
 						{config.modal.copyFiles.type === 'CopyTo'
-							? 'Copy Here'
-							: 'Move Here'}
+							? t('copyHere', {
+									ns: 'myFilesPage',
+							  })
+							: t('moveHere', {
+									ns: 'myFilesPage',
+							  })}
 					</saki-button>
 				</div>
 			</div>
