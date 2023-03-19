@@ -81,7 +81,7 @@ func (fc *FileController) NewFolder(c *gin.Context) {
 		chunkSize = 512 * 1024
 	}
 
-	ut, err := conf.SAaSS.CreateChuunkUploadToken(&saass.CreateUploadTokenOptions{
+	ut, err := conf.SAaSS.CreateChunkUploadToken(&saass.CreateUploadTokenOptions{
 		FileInfo: &saass.FileInfo{
 			Name:         data.FileInfo.Name,
 			Size:         data.FileInfo.Size,
@@ -116,7 +116,7 @@ func (fc *FileController) NewFolder(c *gin.Context) {
 	}
 	urls := protos.FileUrls{
 		DomainUrl:     conf.Config.StaticPathDomain,
-		EncryptionUrl: ut.Urls.EncryptionUrl,
+		EncryptionUrl: ut.Urls.ShortUrl,
 		Url:           ut.Urls.Url,
 	}
 	// log.Info("ChunkSize", ut)

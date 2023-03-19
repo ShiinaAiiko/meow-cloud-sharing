@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { consumers } from 'stream'
 import { NEventListener, NRequest, Wait } from '@nyanyajs/utils'
+import { ResponseData } from '@nyanyajs/utils/dist/nrequest'
 const CryptoJS = require('crypto-js')
 
 export const getHash = (result: string | ArrayBuffer) => {
@@ -9,13 +10,71 @@ export const getHash = (result: string | ArrayBuffer) => {
 	const hash = CryptoJS.SHA256(wordArray).toString()
 	return hash
 }
+export type SType = 'Folder' | 'File'
+export interface AccessToken {
+	user: string
+	temporaryAccessToken: string
+}
 export interface FolderItem {
 	id: string
 	folderName: string
-	parentPath: string
+	shortId: string
+	parentFolderId: string
+	path: string
 	status: number
+	availableRange: {
+		authorId: string
+		password: string
+		allowShare: 1 | -1
+		shareUsers: {
+			uid: string
+			createTime: number
+		}[]
+	}
+	usage: {}
 	createTime: number
 	lastUpdateTime: number
+	deleteTime: number
+	accessToken?: AccessToken
+}
+export interface FileItem {
+	id: string
+	shortId: string
+	fileName: string
+	path: string
+	availableRange: {
+		visitCount: number
+		expirationTime: number
+		authorId: string
+		password: string
+		allowShare: 1 | -1
+		shareUsers: {
+			uid: string
+			createTime: number
+		}[]
+	}
+	usage: {
+		visitCount: number
+	}
+	createTime: number
+	lastUpdateTime: number
+	deleteTime: number
+	urls: {
+		domainUrl: string
+		shortUrl: string
+		url: string
+	}
+	fileInfo: {
+		name: string
+		size: number
+		type: string
+		suffix: string
+		lastModified: number
+		hash: string
+		width: string
+		height: string
+	}
+	accessToken?: AccessToken
 }
 export interface ChunkUploadTokenInfo {
 	token: string
@@ -25,16 +84,18 @@ export interface ChunkUploadTokenInfo {
 	urls: {
 		domainUrl: string
 		uploadUrl: string
-		encryptionUrl: string
+		shortUrl: string
 		url: string
 	}
 }
 
-export class SAaSS extends NEventListener {
+export class SAaSS extends NEventListener<'AppTokenInvalid'> {
 	private baseUrl: string = ''
 	private appToken: string = ''
+	private appTokenDeadline: number = 0
 	private wait = new Wait()
 	private R = new NRequest()
+	private timer?: NodeJS.Timeout
 
 	constructor({ baseUrl }: { baseUrl?: string }) {
 		super()
@@ -46,14 +107,362 @@ export class SAaSS extends NEventListener {
 			createChunkupload: '/chunkupload/create',
 			newFolder: '/folder/new',
 			renameFolder: '/folder/rename',
-			deleteFolder: '/folder/delete',
+			deleteFolders: '/folder/delete',
+			moveFoldersToTrash: '/folder/moveToTrash',
+			copyFolder: '/folder/copy',
+			moveFolder: '/folder/move',
+			restoreFolder: '/folder/restore',
+			checkFolderExists: '/folder/checkExists',
 			getFolderList: '/folder/list/get',
+			getRecyclebinFolderList: '/folder/recyclebin/list/get',
+			setFolderSharing: '/folder/share/set',
+			setFolderPassword: '/folder/password/set',
+			getFolderByShortId: '/folder/shortid/get',
+			getFolderListWithShortId: '/folder/list/shortid/get',
+			getRootFolderToken: '/folder/rootPathToken/get',
+
+			getFileList: '/file/list/get',
+			getFileByShortId: '/file/shortid/get',
+			getRecentFiles: '/file/recent/list/get',
+			getRecyclebinFiles: '/file/recyclebin/list/get',
+			renameFile: '/file/rename',
+			deleteFiles: '/file/delete',
+			moveFilesToTrash: '/file/moveToTrash',
+			restoreFile: '/file/restore',
+			checkFileExists: '/file/checkExists',
+			setFileSharing: '/file/share/set',
+			setFilePassword: '/file/password/set',
+			copyFile: '/file/copy',
+			moveFile: '/file/move',
+			getUserToken: '/app/userToken/get',
+			getPasswordToken: '/file/passwordToken/get',
+			getFileListWithShortId: '/file/list/shortid/get',
 		},
 	}
-	setAppToken(baseUrl: string, token: string) {
+	setBaseUrl(baseUrl: string) {
+		this.baseUrl = baseUrl
+		console.log('getFileByShortId', baseUrl)
+		this.wait.dispatch('baseUrl')
+	}
+	setAppToken(baseUrl: string, token: string, deadline: number) {
 		this.baseUrl = baseUrl
 		this.appToken = token
+		this.appTokenDeadline = deadline
+		this.timer && clearTimeout(this.timer)
+		this.timer = setTimeout(() => {
+			this.wait.revoke()
+			this.appToken = ''
+			this.dispatch('AppTokenInvalid')
+		}, (deadline - 5) * 1000 - new Date().getTime())
 		this.wait.dispatch()
+		this.wait.dispatch('baseUrl')
+	}
+
+	async getFileListWithShortId(
+		id: string,
+		accessToken: AccessToken,
+		deadline: number
+	): Promise<FileItem[]> {
+		// 未来支持联级创建
+		await this.wait.waiting('baseUrl')
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getFileListWithShortId,
+			data: {
+				id,
+				accessToken,
+				deadline,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		if (res.data.code === 200) {
+			return res.data?.data?.list.map((v: any): FileItem => {
+				return {
+					id: v.id,
+					shortId: v.shortId,
+					fileName: v.fileName,
+					path: v.path,
+					availableRange: v.availableRange,
+					usage: v.usage,
+					createTime: v.createTime,
+					lastUpdateTime: v.lastUpdateTime,
+					urls: v.urls,
+					fileInfo: v.fileInfo,
+					deleteTime: v.deleteTime,
+					accessToken: v.accessToken,
+				}
+			})
+		}
+		return []
+	}
+	async getFileList(path: string): Promise<FileItem[]> {
+		// 未来支持联级创建
+		await this.wait.waiting()
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getFileList,
+			data: {
+				appToken: this.appToken,
+				path,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		console.log(res.data)
+		if (res.data.code === 200) {
+			return res.data?.data?.list.map((v: any): FileItem => {
+				return {
+					id: v.id,
+					shortId: v.shortId,
+					fileName: v.fileName,
+					path: v.path,
+					availableRange: v.availableRange,
+					usage: v.usage,
+					createTime: v.createTime,
+					lastUpdateTime: v.lastUpdateTime,
+					urls: v.urls,
+					fileInfo: v.fileInfo,
+					deleteTime: v.deleteTime,
+				}
+			})
+		}
+		return []
+	}
+	async getFileByShortId(
+		id: string,
+		password: string = '',
+		deadline: number
+	): Promise<ResponseData<FileItem | undefined>> {
+		// 未来支持联级创建
+		console.log('getFileByShortId', this.wait)
+		await this.wait.waiting('baseUrl')
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getFileByShortId,
+			data: {
+				id,
+				password,
+				deadline,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		return res.data
+	}
+	async getFolderByShortId(
+		id: string,
+		password: string = '',
+		deadline: number
+	): Promise<ResponseData<FolderItem | undefined>> {
+		// 未来支持联级创建
+		await this.wait.waiting('baseUrl')
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getFolderByShortId,
+			data: {
+				id,
+				password,
+				deadline,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		return res.data
+	}
+	async getFolderListWithShortId(
+		id: string,
+		accessToken: AccessToken,
+		deadline: number
+	): Promise<FolderItem[]> {
+		// 未来支持联级创建
+		await this.wait.waiting('baseUrl')
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getFolderListWithShortId,
+			data: {
+				id,
+				accessToken,
+				deadline,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		if (res.data.code === 200) {
+			return (
+				res.data?.data?.list?.map((v: any): FolderItem => {
+					return {
+						id: v.id,
+						shortId: v.shortId,
+						folderName: v.folderName,
+						path: v.path,
+						parentFolderId: v.parentFolderId,
+						availableRange: v.availableRange,
+						usage: v.usage,
+						status: v.status,
+						createTime: v.createTime,
+						lastUpdateTime: v.lastUpdateTime,
+						deleteTime: v.deleteTime,
+						accessToken: v.accessToken,
+					}
+				}) || []
+			)
+		}
+		return []
+	}
+	async getRecentFiles(
+		path: string,
+		pageNum: number,
+		pageSize: number
+	): Promise<FileItem[]> {
+		// 未来支持联级创建
+		await this.wait.waiting()
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getRecentFiles,
+			data: {
+				appToken: this.appToken,
+				path,
+				pageNum,
+				pageSize,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		if (res.data.code === 200) {
+			return res.data?.data?.list.map((v: any): FileItem => {
+				return {
+					id: v.id,
+					shortId: v.shortId,
+					fileName: v.fileName,
+					path: v.path,
+					availableRange: v.availableRange,
+					usage: v.usage,
+					createTime: v.createTime,
+					lastUpdateTime: v.lastUpdateTime,
+					urls: v.urls,
+					fileInfo: v.fileInfo,
+					deleteTime: v.deleteTime,
+				}
+			})
+		}
+		return []
+	}
+	async getRecyclebinFiles(
+		path: string,
+		pageNum: number,
+		pageSize: number
+	): Promise<FileItem[]> {
+		// 未来支持联级创建
+		await this.wait.waiting()
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getRecyclebinFiles,
+			data: {
+				appToken: this.appToken,
+				path,
+				pageNum,
+				pageSize,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		if (res.data.code === 200) {
+			if (!res.data?.data?.total) return []
+			return res.data?.data?.list.map((v: any): FileItem => {
+				return {
+					id: v.id,
+					shortId: v.shortId,
+					fileName: v.fileName,
+					path: v.path,
+					availableRange: v.availableRange,
+					usage: v.usage,
+					createTime: v.createTime,
+					lastUpdateTime: v.lastUpdateTime,
+					urls: v.urls,
+					fileInfo: v.fileInfo,
+					deleteTime: v.deleteTime,
+				}
+			})
+		} else {
+			console.error(res.data)
+		}
+		return []
+	}
+	async getRecyclebinFolderList(
+		path: string,
+		pageNum: number,
+		pageSize: number
+	): Promise<FolderItem[]> {
+		// 未来支持联级创建
+		await this.wait.waiting()
+		const res = await this.R.request({
+			method: 'GET',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.getRecyclebinFolderList,
+			data: {
+				appToken: this.appToken,
+				path,
+				pageNum,
+				pageSize,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		if (res.data.code === 200) {
+			if (!res.data?.data?.total) return []
+			return (
+				res.data?.data?.list?.map((v: any): FolderItem => {
+					return {
+						id: v.id,
+						shortId: v.shortId,
+						folderName: v.folderName,
+						path: v.path,
+						parentFolderId: v.parentFolderId,
+						availableRange: v.availableRange,
+						usage: v.usage,
+						status: v.status,
+						createTime: v.createTime,
+						lastUpdateTime: v.lastUpdateTime,
+						deleteTime: v.deleteTime,
+					}
+				}) || []
+			)
+		} else {
+			console.error(res.data)
+		}
+		return []
 	}
 	async getFolderList(parentPath: string): Promise<FolderItem[]> {
 		// 未来支持联级创建
@@ -73,16 +482,24 @@ export class SAaSS extends NEventListener {
 			},
 		})
 		if (res.data.code === 200) {
-			return res.data?.data?.list.map((v: any): FolderItem => {
-				return {
-					id: v.id,
-					folderName: v.folderName,
-					parentPath: v.parentPath,
-					status: v.status,
-					createTime: v.createTime,
-					lastUpdateTime: v.lastUpdateTime,
-				}
-			})
+			if (!res.data?.data?.total) return []
+			return (
+				res.data?.data?.list?.map((v: any): FolderItem => {
+					return {
+						id: v.id,
+						shortId: v.shortId,
+						folderName: v.folderName,
+						path: v.path,
+						parentFolderId: v.parentFolderId,
+						availableRange: v.availableRange,
+						usage: v.usage,
+						status: v.status,
+						createTime: v.createTime,
+						lastUpdateTime: v.lastUpdateTime,
+						deleteTime: v.deleteTime,
+					}
+				}) || []
+			)
 		}
 		return []
 	}
@@ -108,7 +525,267 @@ export class SAaSS extends NEventListener {
 			})
 		).data
 	}
-	async renameFolder(id: string, folderName: string) {
+	async renameFile(path: string, oldFileName: string, newFileName: string) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.renameFile,
+				data: {
+					appToken: this.appToken,
+					path,
+					oldFileName,
+					newFileName,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async moveFilesToTrash(path: string, fileNames: string[]) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.moveFilesToTrash,
+				data: {
+					appToken: this.appToken,
+					path: path,
+					fileNames: fileNames,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async checkFileExists(path: string, fileNames: string[]) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		const res = await this.R.request({
+			method: 'POST',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.checkFileExists,
+			data: {
+				appToken: this.appToken,
+				path: path,
+				fileNames: fileNames,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		if (res.data.code === 200) {
+			if (!res.data?.data?.total) return []
+			return res.data?.data?.list as string[]
+		}
+		return []
+	}
+	async restoreFile(path: string, fileNames: string[]) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.restoreFile,
+				data: {
+					appToken: this.appToken,
+					path: path,
+					fileNames: fileNames,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async deleteFiles(path: string, fileNames: string[]) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.deleteFiles,
+				data: {
+					appToken: this.appToken,
+					path: path,
+					fileNames: fileNames,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+
+	async setFileSharing(path: string, fileNames: string[], status: 1 | -1) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.setFileSharing,
+				data: {
+					appToken: this.appToken,
+					path,
+					fileNames,
+					status,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async setFilePassword(path: string, fileName: string, password: string) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.setFilePassword,
+				data: {
+					appToken: this.appToken,
+					path,
+					fileName,
+					password,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+
+	async setFolderSharing(path: string, folderNames: string[], status: 1 | -1) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.setFolderSharing,
+				data: {
+					appToken: this.appToken,
+					path,
+					folderNames,
+					status,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async setFolderPassword(path: string, folderName: string, password: string) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.setFolderPassword,
+				data: {
+					appToken: this.appToken,
+					path,
+					folderName,
+					password,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async copyFile(path: string, fileNames: string[], newPath: string) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.copyFile,
+				data: {
+					appToken: this.appToken,
+					path,
+					fileNames,
+					newPath,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+
+	async moveFile(path: string, fileNames: string[], newPath: string) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.moveFile,
+				data: {
+					appToken: this.appToken,
+					path,
+					fileNames,
+					newPath,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+
+	async renameFolder(
+		parentPath: string,
+		oldFolderName: string,
+		newFolderName: string
+	) {
 		// 未来支持联级创建
 		await this.wait.waiting()
 
@@ -121,8 +798,9 @@ export class SAaSS extends NEventListener {
 					this.apiUrls.v1.renameFolder,
 				data: {
 					appToken: this.appToken,
-					id,
-					folderName,
+					parentPath,
+					oldFolderName,
+					newFolderName,
 				},
 				headers: {
 					'Content-Type': 'multipart/form-data',
@@ -130,7 +808,7 @@ export class SAaSS extends NEventListener {
 			})
 		).data
 	}
-	async deleteFolder(ids: string[]) {
+	async moveFoldersToTrash(parentPath: string, folderNames: string[]) {
 		// 未来支持联级创建
 		await this.wait.waiting()
 
@@ -140,10 +818,11 @@ export class SAaSS extends NEventListener {
 				url:
 					this.baseUrl +
 					this.apiUrls.v1.versionPrefix +
-					this.apiUrls.v1.deleteFolder,
+					this.apiUrls.v1.moveFoldersToTrash,
 				data: {
 					appToken: this.appToken,
-					ids,
+					parentPath,
+					folderNames,
 				},
 				headers: {
 					'Content-Type': 'multipart/form-data',
@@ -151,25 +830,238 @@ export class SAaSS extends NEventListener {
 			})
 		).data
 	}
+	async checkFolderExists(parentPath: string, folderNames: string[]) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+		const res = await this.R.request({
+			method: 'POST',
+			url:
+				this.baseUrl +
+				this.apiUrls.v1.versionPrefix +
+				this.apiUrls.v1.checkFolderExists,
+			data: {
+				appToken: this.appToken,
+				parentPath,
+				folderNames,
+			},
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		})
+		if (res.data.code === 200) {
+			if (!res.data?.data?.total) return []
+			return res.data?.data?.list as string[]
+		}
+		return []
+	}
+	async restoreFolder(parentPath: string, folderNames: string[]) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.restoreFolder,
+				data: {
+					appToken: this.appToken,
+					parentPath,
+					folderNames,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async deleteFolders(parentPath: string, folderNames: string[]) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.deleteFolders,
+				data: {
+					appToken: this.appToken,
+					parentPath,
+					folderNames,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async copyFolder(
+		parentPath: string,
+		folderNames: string[],
+		newParentPath: string
+	) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.copyFolder,
+				data: {
+					appToken: this.appToken,
+					parentPath,
+					folderNames,
+					newParentPath,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+
+	async moveFolder(
+		parentPath: string,
+		folderNames: string[],
+		newParentPath: string
+	) {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		return (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.moveFolder,
+				data: {
+					appToken: this.appToken,
+					parentPath,
+					folderNames,
+					newParentPath,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+	}
+	async getUserToken(): Promise<string> {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		const res = (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.getUserToken,
+				data: {
+					appToken: this.appToken,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+		if (res.code === 200) {
+			return res.data.token
+		} else {
+			throw res
+		}
+	}
+	async getPasswordToken(
+		path: string,
+		fileName: string,
+		deadline: number
+	): Promise<{
+		user: string
+		passwordToken: string
+		// rootPathToken: string
+	}> {
+		// 未来支持联级创建
+		await this.wait.waiting()
+
+		const res = (
+			await this.R.request({
+				method: 'POST',
+				url:
+					this.baseUrl +
+					this.apiUrls.v1.versionPrefix +
+					this.apiUrls.v1.getPasswordToken,
+				data: {
+					appToken: this.appToken,
+					path,
+					fileName,
+					deadline,
+				},
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+		).data
+		if (res.code === 200) {
+			return res.data
+		} else {
+			throw res
+		}
+	}
+	// async getRootFolderToken(deadline: number): Promise<{
+	// 	rootPathToken: string
+	// }> {
+	// 	// 未来支持联级创建
+	// 	await this.wait.waiting()
+
+	// 	const res = (
+	// 		await this.R.request({
+	// 			method: 'POST',
+	// 			url:
+	// 				this.baseUrl +
+	// 				this.apiUrls.v1.versionPrefix +
+	// 				this.apiUrls.v1.getRootFolderToken,
+	// 			data: {
+	// 				appToken: this.appToken,
+	// 				deadline,
+	// 			},
+	// 			headers: {
+	// 				'Content-Type': 'multipart/form-data',
+	// 			},
+	// 		})
+	// 	).data
+	// 	if (res.code === 200) {
+	// 		return res.data
+	// 	} else {
+	// 		throw res
+	// 	}
+	// }
 	uploadFile(options: {
 		file: File
 		url: string
 		token: string
 		chunkSize: number
 		uploadedOffset: number[]
+		uploadedTotalSize: number
 		onprogress: (options: { uploadedSize: number; totalSize: number }) => void
-		onsuccess: (options: { encryptionUrl: string; url: string }) => void
+		onsuccess: (options: { shortUrl: string; url: string }) => void
 		onerror: (err: string) => void
 	}) {
-		console.log('options', options)
+		// console.log('options', options)
 
-		let offset = 0
+		let offset = options.uploadedTotalSize
 		let chunkSize = options.chunkSize
 
 		const reader = new FileReader()
 		reader.onload = async (e) => {
 			if (!e.target?.result) return
-
+			// console.log(options, offset, offset + chunkSize)
 			const result: any = e.target?.result
 			const hash = CryptoJS.SHA256(
 				CryptoJS.lib.WordArray.create(result)
@@ -196,14 +1088,16 @@ export class SAaSS extends NEventListener {
 					})
 				}
 			)
+			// console.log(res)
 			if (res.data.code === 200) {
 				// options.onprogress({
 				// 	uploadedSize: e.total + offset,
 				// 	totalSize: options.file.size,
 				// })
+				// console.log(e.total + offset, options.file.size)
 				if (e.total + offset === options.file.size) {
 					options.onsuccess({
-						encryptionUrl: res.data.data.encryptionUrl,
+						shortUrl: res.data.data.shortUrl,
 						url: res.data.data.url,
 					})
 					return
@@ -232,6 +1126,8 @@ export class SAaSS extends NEventListener {
 		expirationTime = -1,
 		fileInfo,
 		fileConflict,
+		allowShare,
+		shareUsers = ['AllUser'],
 	}: {
 		// 在服务端需要自动加上rootPath,参考folder
 		folderPath: string
@@ -250,11 +1146,23 @@ export class SAaSS extends NEventListener {
 			hash: string
 		}
 		fileConflict: 'Replace' | 'Skip'
+		allowShare: 1 | -1
+		shareUsers?: string[]
 	}): Promise<ChunkUploadTokenInfo | undefined> {
 		// 未来支持联级创建
 		await this.wait.waiting()
 
-		let chunkSize = 256 * 1024
+		let chunkSize = 128 * 1024
+
+		if (fileInfo.size < 1024 * 1024) {
+			chunkSize = 128 * 1024
+		}
+		if (fileInfo.size < 1024 * 1024) {
+			chunkSize = 256 * 1024
+		}
+		if (fileInfo.size < 15 * 1024 * 1024) {
+			chunkSize = 512 * 1024
+		}
 		const res = (
 			await this.R.request({
 				method: 'POST',
@@ -273,6 +1181,8 @@ export class SAaSS extends NEventListener {
 					// "type":           options.Type,
 					fileInfo: fileInfo,
 					fileConflict: fileConflict,
+					allowShare,
+					shareUsers,
 				},
 				headers: {
 					'Content-Type': 'multipart/form-data',
@@ -289,7 +1199,15 @@ export class SAaSS extends NEventListener {
 				},
 			}
 		}
-		return undefined
+		throw res
+	}
+	getType(id: string): SType {
+		const t = id.substring(0, 1)
+		if (['A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(t)) {
+			return 'Folder'
+		} else {
+			return 'File'
+		}
 	}
 }
 
@@ -321,7 +1239,7 @@ export const api = {
 // 	totalSize: options.file.size,
 // })
 // options.onsuccess({
-// 	encryptionUrl: '',
+// 	shortUrl: '',
 // 	url: '',
 // })
 // options.onerror()

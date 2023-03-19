@@ -1,0 +1,37 @@
+.copy-files-component {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: calc(100% - 56px);
+	padding: 0 0 18px;
+	.cfc-folders {
+		height: calc(100% - 48px);
+    .cfc-f-item {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 10px 18px;
+      cursor: default;
+      &:hover {
+        background-color: #ddd;
+      }
+      &:active {
+        background-color: #ccc;
+      }
+      .cfc-f-i-icon {
+        margin-right: 6px;
+      }
+      .cfc-f-i-name {
+        &.disable {
+          color: #999;
+        }
+      }
+    }
+	}
+	.cfc-buttons {
+		display: flex;
+		justify-content: flex-end;
+    padding: 0 18px;
+	}
+}

@@ -30,19 +30,26 @@ import {
 } from '@nyanyajs/utils'
 import * as nyanyalog from 'nyanyajs-log'
 import HeaderComponent from '../components/Header'
+import FooterComponent from '../components/Footer'
 import UserInfoComponent from '../components/UserInfo'
 import UserLoginComponent from '../components/UserLogin'
 import CallComponent from '../components/Call'
 import SettingsComponent from '../components/Settings'
 import NavigatorComponent from '../components/Navigator'
+import ShareUrlComponent from '../components/ShareUrl'
+import PreviewFileComponent from '../components/PreviewFile'
+import CopyFilesComponent from '../components/CopyFiles'
+import SelectFileListHeaderComponent from '../components/SelectFileListHeader'
 
+import { DetailModalComponent } from '../components/Detail'
 import { storage } from '../store/storage'
 import { bindEvent } from '@saki-ui/core'
 import md5 from 'blueimp-md5'
 import { sakiui } from '../config'
-import { Query } from '../modules/methods'
+import { deleteFilesOrFolders, Query, restore } from '../modules/methods'
 import { l } from '../modules/MeowWhisperCoreSDK/languages'
 import MeowWhisperCoreSDK from '../modules/MeowWhisperCoreSDK'
+import { FileItem, FolderItem } from '../modules/saass'
 // import parserFunc from 'ua-parser-js'
 
 const ChatLayout = ({ children }: RouterProps) => {
@@ -57,12 +64,13 @@ const ChatLayout = ({ children }: RouterProps) => {
 	const appStatus = useSelector((state: RootState) => state.config.status)
 	const mwc = useSelector((state: RootState) => state.mwc)
 	const messages = useSelector((state: RootState) => state.messages)
+	const folder = useSelector((state: RootState) => state.folder)
 
 	const config = useSelector((state: RootState) => state.config)
 	const contacts = useSelector((state: RootState) => state.contacts)
 	const group = useSelector((state: RootState) => state.group)
 	const user = useSelector((state: RootState) => state.user)
-	const sso = useSelector((state: RootState) => state.sso)
+	const saass = useSelector((state: RootState) => state.saass)
 
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -77,8 +85,13 @@ const ChatLayout = ({ children }: RouterProps) => {
 	const [openNewDropDownMenu, setOpenNewDropDownMenu] = useState(false)
 	const [openUploadDropDownMenu, setOpenUploadDropDownMenu] = useState(false)
 
+	const parentPath = searchParams.get('p') || ''
+
+	const downloadPage = location.pathname.indexOf('/dl') === 0
+
 	useEffect(() => {
 		const init = async () => {
+			downloadPage && saass.sdk.setBaseUrl('http://192.168.1.104:16100')
 			if (user.isInit && user.isLogin) {
 				// console.log('ossssss', user.userAgent)
 				// console.log('user.isInit && user.isLogin')
@@ -88,9 +101,9 @@ const ChatLayout = ({ children }: RouterProps) => {
 				// dispatch(methods.nsocketio.Init()).unwrap()
 				// await mwc.sdk?.nsocketio.connect()
 				// await dispatch(methods.messages.init())
-				await dispatch(methods.saass.Init())
+				!downloadPage && (await dispatch(methods.saass.Init()))
 			} else {
-				mwc.sdk?.nsocketio.disconnect()
+				// mwc.sdk?.nsocketio.disconnect()
 				// dispatch(methods.nsocketio.Close()).unwrap()
 			}
 		}
@@ -101,16 +114,15 @@ const ChatLayout = ({ children }: RouterProps) => {
 		console.log('开始获取 getContacts', user.isLogin, mwc.encryptionStatus)
 		if (user.isLogin && mwc.encryptionStatus === 'success') {
 			// dispatch(methods.messages.getRecentChatDialogueList())
-
-			dispatch(methods.emoji.init())
-			dispatch(methods.contacts.getContactList())
-			dispatch(methods.group.getGroupList())
-			dispatch(methods.messages.getRecentChatDialogueList())
+			// dispatch(methods.emoji.init())
+			// dispatch(methods.contacts.getContactList())
+			// dispatch(methods.group.getGroupList())
+			// dispatch(methods.messages.getRecentChatDialogueList())
 		}
 		if (!user.isLogin) {
-			dispatch(contactsSlice.actions.setContacts([]))
-			dispatch(groupSlice.actions.setGroupList([]))
-			dispatch(messagesSlice.actions.setRecentChatDialogueList([]))
+			// dispatch(contactsSlice.actions.setContacts([]))
+			// dispatch(groupSlice.actions.setGroupList([]))
+			// dispatch(messagesSlice.actions.setRecentChatDialogueList([]))
 		}
 	}, [user.isLogin, mwc.encryptionStatus])
 
@@ -146,15 +158,25 @@ const ChatLayout = ({ children }: RouterProps) => {
 		if (
 			appStatus.sakiUIInitStatus &&
 			// appStatus.noteInitStatus &&
-			loadProgressBar &&
-			user.isInit
+			loadProgressBar
 		) {
-			console.log('progressBar', progressBar)
-			progressBar < 1 &&
-				setTimeout(() => {
-					console.log('progressBar', progressBar)
-					setProgressBar(1)
-				}, 500)
+			if (downloadPage) {
+				progressBar < 1 &&
+					setTimeout(() => {
+						console.log('progressBar', progressBar)
+						setProgressBar(1)
+					}, 500)
+				return
+			}
+			if (user.isInit) {
+				console.log('progressBar', progressBar)
+				progressBar < 1 &&
+					setTimeout(() => {
+						console.log('progressBar', progressBar)
+						setProgressBar(1)
+					}, 500)
+				return
+			}
 		}
 		// console.log("progressBar",progressBar)
 	}, [
@@ -172,6 +194,13 @@ const ChatLayout = ({ children }: RouterProps) => {
 				log: searchParams.get('log') === '1',
 			})
 		)
+		if (location.pathname !== '/') {
+			dispatch(
+				configSlice.actions.setFileDetailIndex({
+					fileDetailIndex: -1,
+				})
+			)
+		}
 	}, [location.pathname, location.search])
 
 	const [vConsole, setVConsole] = useState()
@@ -332,7 +361,7 @@ const ChatLayout = ({ children }: RouterProps) => {
 						}}
 						className={'cl-main '}
 					>
-						{!user.isLogin ? (
+						{!user.isLogin && !downloadPage ? (
 							user.token ? (
 								<div className='cl-m-connecting'>
 									<saki-animation-loading
@@ -383,149 +412,353 @@ const ChatLayout = ({ children }: RouterProps) => {
 								bottom-navigator={false}
 								device-type={config.deviceType}
 							>
-								<div className='cl-side-navigator' slot='side-navigator'>
-									<NavigatorComponent aside={false} />
-								</div>
+								{location.pathname === '/' ||
+								location.pathname === '/recent' ||
+								location.pathname === '/recyclebin' ? (
+									<div className='cl-side-navigator' slot='side-navigator'>
+										<NavigatorComponent aside={false} />
+									</div>
+								) : (
+									''
+								)}
 								<div className='cl-m-main'>
-									<div className='cl-m-header'>
-										<div className='cl-m-h-left'>
-											{config.deviceType === 'Mobile' ? (
-												<saki-button
-													ref={bindEvent({
-														tap: () => {
-															setShowNavigator(true)
-														},
-													})}
-													width='40px'
-													height='40px'
-													margin='0 10px 0 0'
-													type='CircleIconGrayHover'
-												>
-													<saki-icon color='#999' type='Menu'></saki-icon>
-												</saki-button>
-											) : (
-												''
-											)}
-											{location.pathname === '/' ? (
-												<>
-													<saki-dropdown
-														visible={openNewDropDownMenu}
-														floating-direction='Left'
+									{location.pathname.indexOf('/dl') !== 0 ? (
+										<div className={'cl-m-header ' + config.deviceType}>
+											<div className='cl-m-h-left'>
+												{(config.deviceType === 'Mobile' &&
+													location.pathname === '/') ||
+												location.pathname === '/recent' ||
+												location.pathname === '/recyclebin' ? (
+													<saki-button
 														ref={bindEvent({
-															close: (e) => {
-																setOpenNewDropDownMenu(false)
+															tap: () => {
+																setShowNavigator(true)
 															},
 														})}
+														width='40px'
+														height='40px'
+														margin='0 0px 0 0'
+														type='CircleIconGrayHover'
 													>
+														<saki-icon color='#999' type='Menu'></saki-icon>
+													</saki-button>
+												) : (
+													''
+												)}
+												{location.pathname === '/' ||
+												location.pathname === '/recent' ||
+												location.pathname === '/recyclebin' ? (
+													<div className='ip-dirpath'>
+														{config.dirPath.map((v, i) => {
+															let startIndex = 2
+															if (
+																config.dirPath.length >= 3 &&
+																i >= startIndex &&
+																i < config.dirPath.length - 2
+															) {
+																return i === startIndex ? (
+																	<div key={i} className={'ip-d-item '}>
+																		<saki-button
+																			padding='4px 6px'
+																			border='none'
+																			border-radius='6px'
+																		>
+																			<span className='text-elipsis'>...</span>
+																		</saki-button>
+																		<saki-icon
+																			padding='0 4px'
+																			width='12px'
+																			height='12px'
+																			color='#999'
+																			type='Right'
+																		></saki-icon>
+																	</div>
+																) : (
+																	''
+																)
+															}
+															return (
+																<div
+																	key={i}
+																	className={
+																		'ip-d-item ' +
+																		(i === config.dirPath.length - 1
+																			? 'active'
+																			: '')
+																	}
+																>
+																	<saki-button
+																		ref={bindEvent({
+																			tap: () => {
+																				console.log(
+																					config.dirPath,
+																					i,
+																					'/' +
+																						config.dirPath
+																							.filter((v) => {
+																								return (
+																									v !== 'myFiles' &&
+																									v !== 'recent' &&
+																									v !== 'recyclebin'
+																								)
+																							})
+																							.join('/')
+																				)
+																				if (
+																					v === 'myFiles' ||
+																					v === 'recent' ||
+																					v === 'recyclebin'
+																				) {
+																					navigate?.(
+																						Query(
+																							location.pathname,
+																							{
+																								p: '/',
+																							},
+																							searchParams
+																						)
+																					)
+																				} else {
+																					navigate?.(
+																						Query(
+																							location.pathname,
+																							{
+																								p:
+																									'/' +
+																									config.dirPath
+																										.filter((sv, si) => {
+																											return (
+																												sv !== 'myFiles' &&
+																												sv !== 'recent' &&
+																												sv !== 'recyclebin' &&
+																												si <= i
+																											)
+																										})
+																										.join('/'),
+																							},
+																							searchParams
+																						)
+																					)
+																				}
+																			},
+																		})}
+																		padding='4px 6px'
+																		border='none'
+																		border-radius='6px'
+																	>
+																		<span
+																			className={
+																				i === config.dirPath.length - 1
+																					? ''
+																					: 'text-elipsis'
+																			}
+																		>
+																			{v === 'myFiles'
+																				? t('pageTitle', {
+																						ns: 'myFilesPage',
+																				  })
+																				: v === 'recent'
+																				? t('pageTitle', {
+																						ns: 'recentPage',
+																				  })
+																				: v === 'recyclebin'
+																				? t('pageTitle', {
+																						ns: 'recyclebinPage',
+																				  })
+																				: v}
+																		</span>
+																	</saki-button>
+																	{i !== config.dirPath.length - 1 ? (
+																		<saki-icon
+																			padding='0 4px'
+																			width='12px'
+																			height='12px'
+																			color='#999'
+																			type='Right'
+																		></saki-icon>
+																	) : (
+																		''
+																	)}
+																</div>
+															)
+														})}
+													</div>
+												) : (
+													''
+												)}
+											</div>
+											<div className='cl-m-h-right'>
+												{location.pathname === '/' ? (
+													<>
+														<saki-dropdown
+															visible={openNewDropDownMenu}
+															floating-direction='Left'
+															ref={bindEvent({
+																close: (e) => {
+																	setOpenNewDropDownMenu(false)
+																},
+															})}
+														>
+															<saki-button
+																ref={bindEvent({
+																	tap: () => {
+																		setOpenNewDropDownMenu(true)
+																	},
+																})}
+																padding='6px 18px'
+																type='Primary'
+															>
+																<span className='text-elipsis'>新建</span>
+																<saki-icon
+																	width='12px'
+																	height='12px'
+																	color='#fff'
+																	margin='2px 0 0 6px'
+																	type='Bottom'
+																></saki-icon>
+															</saki-button>
+															<div slot='main'>
+																<saki-menu
+																	ref={bindEvent({
+																		selectvalue: async (e) => {
+																			switch (e.detail.value) {
+																				case 'Folder':
+																					dispatch(methods.folder.newFolder())
+																					break
+
+																				default:
+																					break
+																			}
+																			setOpenNewDropDownMenu(false)
+																		},
+																	})}
+																>
+																	<saki-menu-item
+																		width='150px'
+																		padding='10px 18px'
+																		value={'Folder'}
+																	>
+																		<div className='qv-h-r-u-item'>
+																			<span>文件夹</span>
+																		</div>
+																	</saki-menu-item>
+																</saki-menu>
+															</div>
+														</saki-dropdown>
+														<saki-dropdown
+															visible={openUploadDropDownMenu}
+															floating-direction='Left'
+															ref={bindEvent({
+																close: (e) => {
+																	setOpenUploadDropDownMenu(false)
+																},
+															})}
+														>
+															<saki-button
+																ref={bindEvent({
+																	tap: () => {
+																		setOpenUploadDropDownMenu(true)
+																	},
+																})}
+																border='none'
+																margin='0 0 0 10px'
+																padding='6px 18px'
+																type='Normal'
+															>
+																<span>上传</span>
+																<saki-icon
+																	width='12px'
+																	height='12px'
+																	color='#666'
+																	margin='2px 0 0 6px'
+																	type='Bottom'
+																></saki-icon>
+															</saki-button>
+															<div slot='main'>
+																<saki-menu
+																	ref={bindEvent({
+																		selectvalue: async (e) => {
+																			switch (e.detail.value) {
+																				case 'File':
+																					dispatch(
+																						methods.file.uploadFile({
+																							parentPath,
+																						})
+																					)
+																					break
+
+																				default:
+																					break
+																			}
+																			setOpenUploadDropDownMenu(false)
+																		},
+																	})}
+																>
+																	<saki-menu-item
+																		width='150px'
+																		padding='10px 18px'
+																		value={'File'}
+																	>
+																		<div className='qv-h-r-u-item'>
+																			<span>文件</span>
+																		</div>
+																	</saki-menu-item>
+																</saki-menu>
+															</div>
+														</saki-dropdown>
+													</>
+												) : (
+													''
+												)}
+												{location.pathname === '/recyclebin' ? (
+													<>
 														<saki-button
 															ref={bindEvent({
 																tap: () => {
-																	setOpenNewDropDownMenu(true)
+																	deleteFilesOrFolders({
+																		files: folder.fileTree?.['recyclebin']
+																			.filter((v) => v.file)
+																			.map((v) => v.file) as FileItem[],
+																		folders: folder.fileTree?.['recyclebin']
+																			.filter((v) => v.folder)
+																			.map((v) => v.folder) as FolderItem[],
+																	})
+																},
+															})}
+															padding='6px 18px'
+															margin='0 6px 0 0'
+															type='Primary'
+														>
+															<span className='text-elipsis'>清空回收站</span>
+														</saki-button>
+														<saki-button
+															ref={bindEvent({
+																tap: () => {
+																	restore({
+																		files: folder.fileTree?.['recyclebin']
+																			.filter((v) => v.file)
+																			.map((v) => v.file) as FileItem[],
+																		folders: folder.fileTree?.['recyclebin']
+																			.filter((v) => v.folder)
+																			.map((v) => v.folder) as FolderItem[],
+																	})
 																},
 															})}
 															padding='6px 18px'
 															type='Primary'
 														>
-															<span>新建</span>
-															<saki-icon
-																width='12px'
-																height='12px'
-																color='#fff'
-																margin='2px 0 0 6px'
-																type='Bottom'
-															></saki-icon>
+															<span className='text-elipsis'>还原所有项目</span>
 														</saki-button>
-														<div slot='main'>
-															<saki-menu
-																ref={bindEvent({
-																	selectvalue: async (e) => {
-																		switch (e.detail.value) {
-																			case 'Folder':
-																				dispatch(methods.folder.newFolder())
-																				break
-
-																			default:
-																				break
-																		}
-																		setOpenNewDropDownMenu(false)
-																	},
-																})}
-															>
-																<saki-menu-item
-																	width='150px'
-																	padding='10px 18px'
-																	value={'Folder'}
-																>
-																	<div className='qv-h-r-u-item'>
-																		<span>文件夹</span>
-																	</div>
-																</saki-menu-item>
-															</saki-menu>
-														</div>
-													</saki-dropdown>
-													<saki-dropdown
-														visible={openUploadDropDownMenu}
-														floating-direction='Left'
-														ref={bindEvent({
-															close: (e) => {
-																setOpenUploadDropDownMenu(false)
-															},
-														})}
-													>
-														<saki-button
-															ref={bindEvent({
-																tap: () => {
-																	setOpenUploadDropDownMenu(true)
-																},
-															})}
-															border='none'
-															margin='0 0 0 10px'
-															padding='6px 18px'
-															type='Normal'
-														>
-															<span>上传</span>
-															<saki-icon
-																width='12px'
-																height='12px'
-																color='#666'
-																margin='2px 0 0 6px'
-																type='Bottom'
-															></saki-icon>
-														</saki-button>
-														<div slot='main'>
-															<saki-menu
-																ref={bindEvent({
-																	selectvalue: async (e) => {
-																		switch (e.detail.value) {
-																			case 'File':
-																				dispatch(methods.file.uploadFile())
-																				break
-
-																			default:
-																				break
-																		}
-																		setOpenUploadDropDownMenu(false)
-																	},
-																})}
-															>
-																<saki-menu-item
-																	width='150px'
-																	padding='10px 18px'
-																	value={'File'}
-																>
-																	<div className='qv-h-r-u-item'>
-																		<span>文件</span>
-																	</div>
-																</saki-menu-item>
-															</saki-menu>
-														</div>
-													</saki-dropdown>
-												</>
-											) : (
-												''
-											)}
+													</>
+												) : (
+													''
+												)}
+											</div>
+											<SelectFileListHeaderComponent></SelectFileListHeaderComponent>
 										</div>
-									</div>
+									) : (
+										''
+									)}
 									<div className='cl-m-m-main'>{children}</div>
 								</div>
 							</saki-chat-layout>
@@ -535,6 +768,10 @@ const ChatLayout = ({ children }: RouterProps) => {
 					{/* <UserLoginComponent></UserLoginComponent> */}
 					<UserInfoComponent></UserInfoComponent>
 					<CallComponent></CallComponent>
+					<ShareUrlComponent></ShareUrlComponent>
+					<PreviewFileComponent></PreviewFileComponent>
+					<DetailModalComponent></DetailModalComponent>
+					<CopyFilesComponent></CopyFilesComponent>
 					<Login />
 				</>
 			</div>

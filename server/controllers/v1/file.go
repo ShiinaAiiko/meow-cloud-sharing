@@ -82,7 +82,7 @@ func (fc *FileController) GetFiles(c *gin.Context) {
 		chunkSize = 512 * 1024
 	}
 
-	ut, err := conf.SAaSS.CreateChuunkUploadToken(&saass.CreateUploadTokenOptions{
+	ut, err := conf.SAaSS.CreateChunkUploadToken(&saass.CreateUploadTokenOptions{
 		FileInfo: &saass.FileInfo{
 			Name:         data.FileInfo.Name,
 			Size:         data.FileInfo.Size,
@@ -117,7 +117,7 @@ func (fc *FileController) GetFiles(c *gin.Context) {
 	}
 	urls := protos.FileUrls{
 		DomainUrl:     conf.Config.StaticPathDomain,
-		EncryptionUrl: ut.Urls.EncryptionUrl,
+		EncryptionUrl: ut.Urls.ShortUrl,
 		Url:           ut.Urls.Url,
 	}
 	// log.Info("ChunkSize", ut)
@@ -198,7 +198,7 @@ func (fc *FileController) GetUploadFileToken(c *gin.Context) {
 		chunkSize = 512 * 1024
 	}
 
-	ut, err := conf.SAaSS.CreateChuunkUploadToken(&saass.CreateUploadTokenOptions{
+	ut, err := conf.SAaSS.CreateChunkUploadToken(&saass.CreateUploadTokenOptions{
 		FileInfo: &saass.FileInfo{
 			Name:         data.FileInfo.Name,
 			Size:         data.FileInfo.Size,
@@ -233,7 +233,7 @@ func (fc *FileController) GetUploadFileToken(c *gin.Context) {
 	}
 	urls := protos.FileUrls{
 		DomainUrl:     conf.Config.StaticPathDomain,
-		EncryptionUrl: ut.Urls.EncryptionUrl,
+		EncryptionUrl: ut.Urls.ShortUrl,
 		Url:           ut.Urls.Url,
 	}
 	// log.Info("ChunkSize", ut)
@@ -303,7 +303,7 @@ func (fc *FileController) GetCustomStickersUploadFileToken(c *gin.Context) {
 
 	password := cipher.MD5(authorId + "CustomStickers" + nstrings.ToString(time.Now().Unix()))
 
-	ut, err := conf.SAaSS.CreateChuunkUploadToken(&saass.CreateUploadTokenOptions{
+	ut, err := conf.SAaSS.CreateChunkUploadToken(&saass.CreateUploadTokenOptions{
 		FileInfo: &saass.FileInfo{
 			Name:         cipher.MD5(authorId+"CustomStickers") + ".json",
 			Size:         data.Size,
@@ -341,7 +341,7 @@ func (fc *FileController) GetCustomStickersUploadFileToken(c *gin.Context) {
 
 	d := map[string]string{
 		"password": password,
-		"url":      ut.Urls.EncryptionUrl,
+		"url":      ut.Urls.ShortUrl,
 	}
 
 	if err = conf.SSO.AppData.Set("CustomStickers", d, c.GetString("token"), c.GetString("deviceId"), c.MustGet("userAgent").(*sso.UserAgent)); err != nil {
@@ -352,7 +352,7 @@ func (fc *FileController) GetCustomStickersUploadFileToken(c *gin.Context) {
 	}
 	urls := protos.FileUrls{
 		DomainUrl:     conf.Config.StaticPathDomain,
-		EncryptionUrl: ut.Urls.EncryptionUrl,
+		EncryptionUrl: ut.Urls.ShortUrl,
 		Url:           ut.Urls.Url,
 	}
 	// log.Info("ChunkSize", ut)

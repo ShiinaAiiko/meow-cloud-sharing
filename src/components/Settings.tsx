@@ -635,6 +635,7 @@ const Account = ({ show }: { show: boolean }) => {
 const Language = ({ show }: { show: boolean }) => {
 	const { t, i18n } = useTranslation('settings')
 	const language = useSelector((state: RootState) => state.config.language)
+	const config = useSelector((state: RootState) => state.config)
 
 	const dispatch = useDispatch<AppDispatch>()
 	// useEffect(() => {
@@ -643,20 +644,6 @@ const Language = ({ show }: { show: boolean }) => {
 
 	useEffect(() => {}, [language])
 
-	const [languages, setLanguages] = useState([
-		{
-			value: 'zh-CN',
-			content: '中文(简体) - Chinese(Simplified)',
-		},
-		{
-			value: 'zh-TW',
-			content: '中文(繁體) - Chinese(Traditional)',
-		},
-		{
-			value: 'en-US',
-			content: 'English - English',
-		},
-	])
 	return (
 		<div
 			style={{
@@ -683,13 +670,19 @@ const Language = ({ show }: { show: boolean }) => {
 						flex-direction='Column'
 						type='Radio'
 					>
-						<saki-checkbox-item padding='14px 0' value='system'>
-							{t('system')}
-						</saki-checkbox-item>
-						{languages.map((v, i) => {
+						{config.languages.map((v, i) => {
 							return (
-								<saki-checkbox-item key={i} padding='14px 0' value={v.value}>
-									{v.content}
+								<saki-checkbox-item key={i} padding='14px 0' value={v}>
+									{t(v, {
+										ns: 'languages',
+									}) +
+										(v !== 'system'
+											? ' - ' +
+											  t(v, {
+													ns: 'languages',
+													lng: v,
+											  })
+											: '')}
 								</saki-checkbox-item>
 							)
 						})}

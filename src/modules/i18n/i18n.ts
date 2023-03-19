@@ -74,9 +74,20 @@ const resources = {
 			reply: '回复',
 			forward: '转发',
 			edit: '编辑',
+
+			moveToTrash: '移入回收站',
 		},
 		myFilesPage: {
-			myFiles: '我的文件',
+			pageTitle: '我的文件',
+		},
+		recentPage: {
+			pageTitle: '最近',
+		},
+		recyclebinPage: {
+			pageTitle: '回收站',
+		},
+		downloadPage: {
+			pageTitle: '下载',
 		},
 		messagesPage: {
 			pageTitle: '消息',
@@ -156,6 +167,12 @@ const resources = {
 
 			about: '关于',
 		},
+		languages: {
+			'en-US': '英文',
+			'zh-CN': '中文(简体)',
+			'zh-TW': '中文(繁体)',
+			system: '使用设备语言',
+		},
 	},
 	'zh-TW': {
 		common: {
@@ -229,9 +246,20 @@ const resources = {
 			reply: '回复',
 			forward: '轉發',
 			edit: '編輯',
+
+			moveToTrash: '移入回收站',
 		},
 		myFilesPage: {
-			myFiles: '我的文件',
+			pageTitle: '我的文件',
+		},
+		recentPage: {
+			pageTitle: '最近',
+		},
+		recyclebinPage: {
+			pageTitle: '回收站',
+		},
+		downloadPage: {
+			pageTitle: '下載',
 		},
 		messagesPage: {
 			pageTitle: '消息',
@@ -312,6 +340,12 @@ const resources = {
 
 			about: '關於',
 		},
+		languages: {
+			'en-US': '英文',
+			'zh-CN': '中文(簡體)',
+			'zh-TW': '中文(繁體)',
+			system: '使用設備語言',
+		},
 	},
 	'en-US': {
 		common: {
@@ -386,11 +420,23 @@ const resources = {
 			reply: 'Reply',
 			forward: 'Forward',
 			edit: 'Edit',
+
+			moveToTrash: 'Move to Trash',
 		},
 
 		myFilesPage: {
-			myFiles: 'My Files',
+			pageTitle: 'My Files',
 		},
+		recentPage: {
+			pageTitle: 'Recent',
+		},
+		recyclebinPage: {
+			pageTitle: 'Recycle Bin',
+		},
+		downloadPage: {
+			pageTitle: 'Download',
+		},
+
 		messagesPage: {
 			pageTitle: 'Messages',
 			loadingChatData: 'Loading chat data',
@@ -470,6 +516,12 @@ const resources = {
 			callNotificationSound: 'Call notification sound',
 
 			about: 'About ',
+		},
+		languages: {
+			'en-US': 'English',
+			'zh-CN': 'Chinese(Simplified)',
+			'zh-TW': 'Chinese(Traditional)',
+			system: 'Use device language',
 		},
 	},
 }

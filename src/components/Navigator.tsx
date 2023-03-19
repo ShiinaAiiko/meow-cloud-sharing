@@ -96,20 +96,33 @@ const NavigatorComponent = ({
 					></saki-chat-layout-side-navigator-menu-item>
 					<saki-chat-layout-side-navigator-menu-item
 						margin='0 0 12px 0'
-						active={location.pathname === '/contacts'}
+						active={location.pathname === '/recent'}
 						icon-type={'TimeFill'}
 						name={'RECENT'}
 						count={config.count.contacts}
-						href='/contacts'
+						href='/recent'
 					></saki-chat-layout-side-navigator-menu-item>
-					{/* <saki-chat-layout-side-navigator-menu-item
-											margin='0 0 12px 0'
-											active={location.pathname === '/notifications'}
-											icon-type={'NotificationsFill'}
-											name={'NOTIFICATIONS'}
-											count={config.count.notifications}
-											href='/notifications'
-										></saki-chat-layout-side-navigator-menu-item> */}
+					<saki-chat-layout-side-navigator-menu-item
+						margin='0 0 12px 0'
+						active={location.pathname === '/recyclebin'}
+						// icon-type={'TrashFill'}
+						name={'RECYCLE BIN'}
+						count={config.count.notifications}
+						href='/recyclebin'
+					>
+						<div slot='icon'>
+							<saki-icon
+								color={
+									location.pathname === '/recyclebin'
+										? 'var(--saki-default-color)'
+										: '#999'
+								}
+								width={'20px'}
+								height={'20px'}
+								type={'TrashFill'}
+							></saki-icon>
+						</div>
+					</saki-chat-layout-side-navigator-menu-item>
 				</div>
 				<div slot='bottom'>
 					<saki-chat-layout-side-navigator-menu-item

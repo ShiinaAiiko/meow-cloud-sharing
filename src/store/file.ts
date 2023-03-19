@@ -5,18 +5,33 @@ import {
 	configureStore,
 } from '@reduxjs/toolkit'
 import md5 from 'blueimp-md5'
-import store, { ActionParams, methods, RootState } from '.'
+import store, {
+	ActionParams,
+	configSlice,
+	folderSlice,
+	methods,
+	RootState,
+} from '.'
 import { PARAMS, protoRoot } from '../protos'
-import { WebStorage, SakiSSOClient, SAaSS, RunQueue } from '@nyanyajs/utils'
+import {
+	WebStorage,
+	SakiSSOClient,
+	SAaSS,
+	RunQueue,
+	Debounce,
+} from '@nyanyajs/utils'
 import { MeowWhisperCoreSDK } from '../modules/MeowWhisperCoreSDK'
 import { meowWhisperCore, sakisso } from '../config'
 import { userAgent } from './user'
 import { storage } from './storage'
-import { snackbar } from '@saki-ui/core'
+import i18n from '../modules/i18n/i18n'
+
+import { snackbar, prompt, alert, multiplePrompts } from '@saki-ui/core'
 import { FriendItem } from './contacts'
 import createSocketioRouter from '../modules/socketio/router'
 import { GroupCache } from './group'
 import { CustomStickersItem } from './emoji'
+import { PathJoin } from '../modules/methods'
 
 export const modeName = 'file'
 // export let meowWhisperCoreSDK: MeowWhisperCoreSDK | undefined
@@ -29,14 +44,18 @@ export const fileSlice = createSlice({
 
 export const fileQueue = new RunQueue()
 
+export const debounce = new Debounce()
+
 export const fileMethods = {
 	uploadFile: createAsyncThunk<
 		void,
-		void,
+		{
+			parentPath: string
+		},
 		{
 			state: RootState
 		}
-	>(modeName + '/uploadFile', (_, thunkAPI) => {
+	>(modeName + '/uploadFile', ({ parentPath }, thunkAPI) => {
 		return new Promise(async (resolve, reject) => {
 			const { config, mwc, saass } = thunkAPI.getState()
 			console.log('------uploadFile------')
@@ -46,8 +65,30 @@ export const fileMethods = {
 			input.multiple = true
 			input.accept = '*'
 			let index = 0
-			const uploaded = (url: string) => {
+			const uploaded = async (url: string) => {
 				console.log(url)
+				const { folder } = thunkAPI.getState()
+
+				debounce.increase(async () => {
+					await thunkAPI.dispatch(
+						methods.folder.getFileTreeList({
+							folderPath: parentPath,
+						})
+					)
+				}, 300)
+				// 未来可以优化成单独为此内容添加
+				// thunkAPI.dispatch(
+				// 	methods.folder.setList(
+				// 		folder.list.filter((v) => {
+				// 			return v.type === 'Folder'
+				// 		})
+				// 	)
+				// )
+				// await thunkAPI.dispatch(
+				// 	methods.file.GetFilesInTheParentPath({
+				// 		parentPath,
+				// 	})
+				// )
 			}
 			const up = async (files: FileList, index: number) => {
 				try {
@@ -60,89 +101,113 @@ export const fileMethods = {
 					if (file) {
 						let reader = new FileReader()
 						reader.onload = async (e) => {
-							if (!e.target?.result || !file) return
-							const hash = saass.sdk.getHash(e.target.result)
+							try {
+								if (!e.target?.result || !file) return
+								const hash = saass.sdk.getHash(e.target.result)
 
-							const res = await saass.sdk.createChunkUpload({
-								folderPath: '/',
-								fileName: file.name,
-								fileInfo: {
-									name: file.name,
-									size: file.size,
-									type: file.type,
-									fileSuffix:
-										'.' + file.name.substring(file.name.lastIndexOf('.') + 1),
-									lastModified: file.lastModified,
-									hash: hash,
-								},
-								fileConflict: 'Replace',
-							})
-							console.log('res', res)
-							if (res) {
-								//         apiUrl: "http://192.168.0.106:16100/api/v1/chunkupload/upload"
-								// chunkSize: 262144
-								// token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaWxlSW5mbyI6eyJBcHBJZCI6IjFlODE2OTE0LTY0ZDItNDc3YS04ZTM1LTQyN2Q5NDdlY2Y1MCIsIk5hbWUiOiJQbmdJdGVtXzEyMTExMDgucG5nIiwiRW5jcnlwdGlvbk5hbWUiOiI4NmZlYmJhNTdiY2NkOGExODNhMTkyZWM2OTRmNzUzNSIsIlBhdGgiOiIvRjA5MzVFNENENTkyMEFBNkM3Qzk5NkE1RUU1M0E3MEYvZmlsZXMvIiwiVGVtcEZvbGRlclBhdGgiOiIuL3N0YXRpYy9jaHVjay8wMzJhYzZhMjQ2ZWI3ZTUxZTM3Mzc3YzNhYmE4YjM2NzE1NGZiMTUxMDFhOTI3NzY2NDA0MDRlMDlhZjkwMGJkLyIsIlRlbXBDaHVja0ZvbGRlclBhdGgiOiIuL3N0YXRpYy9jaHVjay8wMzJhYzZhMjQ2ZWI3ZTUxZTM3Mzc3YzNhYmE4YjM2NzE1NGZiMTUxMDFhOTI3NzY2NDA0MDRlMDlhZjkwMGJkLy9jaHVjay8iLCJDaHVua1NpemUiOjEzMTA3MiwiQ3JlYXRlVGltZSI6MTY1OTg5NDkwNCwiRXhwaXJhdGlvblRpbWUiOi0xLCJWaXNpdENvdW50IjotMSwiRmlsZUluZm8iOnsiTmFtZSI6IlBuZ0l0ZW1fMTIxMTEwOCIsIlNpemUiOjExMjAyLCJUeXBlIjoiaW1hZ2UvcG5nIiwiU3VmZml4IjoiLnBuZyIsIkxhc3RNb2RpZmllZCI6MTY1OTgxMzE3NjY0MSwiSGFzaCI6IjAzMmFjNmEyNDZlYjdlNTFlMzczNzdjM2FiYThiMzY3MTU0ZmIxNTEwMWE5Mjc3NjY0MDQwNGUwOWFmOTAwYmQifSwiRmlsZUNvbmZsaWN0IjoiUmVwbGFjZSJ9LCJleHAiOjE2NTk5ODEzMDQsImlzcyI6InNhYXNzIn0.nfwmBNpJAMCK31U_vG4dL3mRvkhKb7EnaAqji29X9Hw"
-								// uploadedOffset: []
-								// urls: Urls
-								// domainUrl: "http://192.168.0.106:16100"
-								// encryptionUrl: "/s/86febba57bccd8a183a192ec694f7535"
-								// url: "/s/F0935E4CD5920AA6C7
-								const data = res
-								console.log(data)
-								if (data.token) {
-									saass.sdk.uploadFile({
-										file: file,
-										url: data.urls.uploadUrl,
-										token: data.token,
-										chunkSize: data.chunkSize,
-										uploadedOffset: data.uploadedOffset || [],
-										async onprogress(options) {
-											console.log(options)
-											// await store.state.storage.staticFileWS.getAndSet(
-											// 	upload.data.urls?.encryptionUrl || '',
-											// 	async (v) => {
-											// 		return {
-											// 			...v,
-											// 			fileDataUrl: result || '',
-											// 			uploadedSize: options.uploadedSize,
-											// 			totalSize: options.totalSize,
-											// 		}
-											// 	}
-											// )
-										},
-										async onsuccess(options) {
-											console.log(options)
-											uploaded(data.urls?.domainUrl + options.encryptionUrl)
-											// resolve(data.urls?.domainUrl + options.encryptionUrl)
-											// await store.state.storage.staticFileWS?.getAndSet(
-											// 	upload.data.urls?.encryptionUrl || '',
-											// 	async (v) => {
-											// 		return {
-											// 			...v,
-											// 			fileDataUrl: result || '',
-											// 			encryptionUrl: options.encryptionUrl,
-											// 			url: options.url,
-											// 			uploadedSize: file.size,
-											// 			totalSize: file.size,
-											// 		}
-											// 	}
-											// )
-											// store.dispatch('chat/sendMessageWidthSecretChatApi', {
-											// 	messageId,
-											// 	dialogId,
-											// })
-										},
-										onerror(err) {
-											console.log('error', err)
-											// store.dispatch('chat/failedToSendMessage', {
-											// 	messageId,
-											// 	dialogId,
-											// })
-										},
-									})
-								} else {
-									uploaded(data.urls.domainUrl + data.urls.encryptionUrl)
+								const res = await saass.sdk.createChunkUpload({
+									folderPath: parentPath,
+									fileName: file.name,
+									fileInfo: {
+										name: file.name,
+										size: file.size,
+										type: file.type,
+										fileSuffix:
+											'.' + file.name.substring(file.name.lastIndexOf('.') + 1),
+										lastModified: file.lastModified,
+										hash: hash,
+									},
+									fileConflict: 'Replace',
+									allowShare: -1,
+								})
+								console.log('res', res)
+								if (res) {
+									//         apiUrl: "http://192.168.0.106:16100/api/v1/chunkupload/upload"
+									// chunkSize: 262144
+									// token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaWxlSW5mbyI6eyJBcHBJZCI6IjFlODE2OTE0LTY0ZDItNDc3YS04ZTM1LTQyN2Q5NDdlY2Y1MCIsIk5hbWUiOiJQbmdJdGVtXzEyMTExMDgucG5nIiwiRW5jcnlwdGlvbk5hbWUiOiI4NmZlYmJhNTdiY2NkOGExODNhMTkyZWM2OTRmNzUzNSIsIlBhdGgiOiIvRjA5MzVFNENENTkyMEFBNkM3Qzk5NkE1RUU1M0E3MEYvZmlsZXMvIiwiVGVtcEZvbGRlclBhdGgiOiIuL3N0YXRpYy9jaHVjay8wMzJhYzZhMjQ2ZWI3ZTUxZTM3Mzc3YzNhYmE4YjM2NzE1NGZiMTUxMDFhOTI3NzY2NDA0MDRlMDlhZjkwMGJkLyIsIlRlbXBDaHVja0ZvbGRlclBhdGgiOiIuL3N0YXRpYy9jaHVjay8wMzJhYzZhMjQ2ZWI3ZTUxZTM3Mzc3YzNhYmE4YjM2NzE1NGZiMTUxMDFhOTI3NzY2NDA0MDRlMDlhZjkwMGJkLy9jaHVjay8iLCJDaHVua1NpemUiOjEzMTA3MiwiQ3JlYXRlVGltZSI6MTY1OTg5NDkwNCwiRXhwaXJhdGlvblRpbWUiOi0xLCJWaXNpdENvdW50IjotMSwiRmlsZUluZm8iOnsiTmFtZSI6IlBuZ0l0ZW1fMTIxMTEwOCIsIlNpemUiOjExMjAyLCJUeXBlIjoiaW1hZ2UvcG5nIiwiU3VmZml4IjoiLnBuZyIsIkxhc3RNb2RpZmllZCI6MTY1OTgxMzE3NjY0MSwiSGFzaCI6IjAzMmFjNmEyNDZlYjdlNTFlMzczNzdjM2FiYThiMzY3MTU0ZmIxNTEwMWE5Mjc3NjY0MDQwNGUwOWFmOTAwYmQifSwiRmlsZUNvbmZsaWN0IjoiUmVwbGFjZSJ9LCJleHAiOjE2NTk5ODEzMDQsImlzcyI6InNhYXNzIn0.nfwmBNpJAMCK31U_vG4dL3mRvkhKb7EnaAqji29X9Hw"
+									// uploadedOffset: []
+									// urls: Urls
+									// domainUrl: "http://192.168.0.106:16100"
+									// encryptionUrl: "/s/86febba57bccd8a183a192ec694f7535"
+									// url: "/s/F0935E4CD5920AA6C7
+									const data = res
+									console.log(data)
+									if (data.token) {
+										saass.sdk.uploadFile({
+											file: file,
+											url: data.urls.uploadUrl,
+											token: data.token,
+											chunkSize: data.chunkSize,
+											uploadedOffset: data.uploadedOffset || [],
+											uploadedTotalSize: data.uploadedTotalSize || 0,
+
+											async onprogress(options) {
+												console.log(options)
+												// await store.state.storage.staticFileWS.getAndSet(
+												// 	upload.data.urls?.encryptionUrl || '',
+												// 	async (v) => {
+												// 		return {
+												// 			...v,
+												// 			fileDataUrl: result || '',
+												// 			uploadedSize: options.uploadedSize,
+												// 			totalSize: options.totalSize,
+												// 		}
+												// 	}
+												// )
+											},
+											async onsuccess(options) {
+												console.log(options)
+												uploaded(data.urls?.domainUrl + options.shortUrl)
+												// resolve(data.urls?.domainUrl + options.encryptionUrl)
+												// await store.state.storage.staticFileWS?.getAndSet(
+												// 	upload.data.urls?.encryptionUrl || '',
+												// 	async (v) => {
+												// 		return {
+												// 			...v,
+												// 			fileDataUrl: result || '',
+												// 			encryptionUrl: options.encryptionUrl,
+												// 			url: options.url,
+												// 			uploadedSize: file.size,
+												// 			totalSize: file.size,
+												// 		}
+												// 	}
+												// )
+												// store.dispatch('chat/sendMessageWidthSecretChatApi', {
+												// 	messageId,
+												// 	dialogId,
+												// })
+											},
+											onerror(err) {
+												console.log('error', err)
+												err &&
+													snackbar({
+														message: '文件上传失败',
+														autoHideDuration: 2000,
+														vertical: 'top',
+														horizontal: 'center',
+														backgroundColor: 'var(--saki-default-color)',
+														color: '#fff',
+													}).open()
+												// store.dispatch('chat/failedToSendMessage', {
+												// 	messageId,
+												// 	dialogId,
+												// })
+											},
+										})
+									} else {
+										uploaded(data.urls.domainUrl + data.urls.shortUrl)
+									}
 								}
+							} catch (error) {
+								console.log(error)
+								snackbar({
+									message: '文件上传失败',
+									autoHideDuration: 2000,
+									vertical: 'top',
+									horizontal: 'center',
+									backgroundColor: 'var(--saki-default-color)',
+									color: '#fff',
+								}).open()
 							}
 						}
 						reader.readAsArrayBuffer(file)
@@ -183,78 +248,651 @@ export const fileMethods = {
 				console.log(input?.files)
 				if (input?.files?.length) {
 					index = 0
-					up(input?.files, index)
+					// up(input?.files, index)
+					for (let i = 0; i < input?.files.length; i++) {
+						up(input?.files, i)
+					}
 				}
 			}
 			input.click()
 		})
 	}),
-	uploadCustomStickersFile: createAsyncThunk<
-		string,
+	// GetFilesInTheParentPath: createAsyncThunk<
+	// 	void,
+	// 	{ parentPath: string },
+	// 	{
+	// 		state: RootState
+	// 	}
+	// >(
+	// 	modeName + '/GetFilesorFoldersInTheParentPath',
+	// 	async ({ parentPath }, thunkAPI) => {
+	// 		const { saass, folder } = thunkAPI.getState()
+
+	// 		thunkAPI.dispatch(
+	// 			methods.folder.setList(folder.list.filter((v) => v.type !== 'File'))
+	// 		)
+	// 		const getFileList = await saass.sdk.getFileList(parentPath)
+	// 		console.log('getFileList', getFileList)
+
+	// 		thunkAPI.dispatch(
+	// 			methods.folder.setList(
+	// 				[...thunkAPI.getState().folder.list].concat(
+	// 					getFileList.map((v) => {
+	// 						// console.log(
+	// 						// 	v.parentPath
+	// 						// 		.split('/')
+	// 						// 		.filter((_, i) => {
+	// 						// 			return i > 1
+	// 						// 		})
+	// 						// 		.join('/')
+	// 						// )
+	// 						return {
+	// 							type: 'File',
+	// 							path: PathJoin(v.path, v.fileName),
+	// 							file: {
+	// 								...v,
+	// 							},
+	// 						}
+	// 					})
+	// 				)
+	// 			)
+	// 		)
+	// 	}
+	// ),
+	rename: createAsyncThunk<
+		void,
 		{
-			cs: CustomStickersItem[]
+			path: string
+			fileName: string
 		},
 		{
 			state: RootState
 		}
-	>(modeName + '/uploadCustomStickersFile', ({ cs }, thunkAPI) => {
-		return new Promise(async (resolve, reject) => {
-			const { config, mwc, user } = thunkAPI.getState()
-			const { getHash, uploadFile } = SAaSS
-
-			// console.log('uploadCustomStickersFile', cs)
-			const blob = new Blob([
-				JSON.stringify({
-					list: cs,
-				}),
-			])
-			const file = new File(
-				[blob],
-				md5(user.userInfo.uid + '_CustomStickers') + '.json',
-				{
-					type: 'application/json',
+	>(modeName + '/rename', async ({ path, fileName }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+		const t = i18n.t
+		let v = fileName
+		prompt({
+			title: '重命名',
+			value: v,
+			placeholder: '输入你的文件名',
+			cancelText: t('cancel', {
+				ns: 'common',
+			}),
+			confirmText: t('next', {
+				ns: 'common',
+			}),
+			onChange(value) {
+				// console.log(value, /^[\S]\x20{1,50}$/.test(value.trim()))
+				if (!/^[\s*\S+?]{1,50}$/.test(value.trim())) {
+					return t('lengthLimited1to50', {
+						ns: 'prompt',
+					})
 				}
-			)
-			// console.log(file)
-			let reader = new FileReader()
-			reader.onload = async (e) => {
-				if (!e.target?.result) return
-				const hash = getHash(e.target.result)
-				// console.log('hash', hash)
-				// console.log('file', file)
-
-				const res = await mwc.sdk?.api.file.getCustomStickersUploadFileToken({
-					size: file.size,
-					hash,
-				})
-				// console.log('getCustomStickersUploadFileToken', res)
-				if (res?.code === 200) {
-					const data: any = res.data
-					if (data.token) {
-						uploadFile({
-							file: file,
-							url: data.apiUrl,
-							token: data.token,
-							chunkSize: data.chunkSize,
-							uploadedOffset: data.uploadedOffset || [],
-							async onprogress(options) {
-								// console.log(options)
-							},
-							async onsuccess(options) {
-								// console.log(options)
-								resolve(data.urls?.domainUrl + options.encryptionUrl)
-							},
-							onerror(err) {
-								console.log('error', err)
-							},
+				v = value.trim()
+				return ''
+			},
+			async onConfirm() {
+				if (v === fileName) {
+					return
+				}
+				const res = await saass.sdk.renameFile(path, fileName, v)
+				if (res.code === 200) {
+					thunkAPI.dispatch(
+						methods.folder.setFileTreeList({
+							path: path,
+							list: thunkAPI.getState().folder.fileTree[path].map((sv) => {
+								if (sv.file?.path === path && sv.file?.fileName === fileName) {
+									return {
+										...sv,
+										file: {
+											...sv.file,
+											fileName: v,
+										},
+									}
+								}
+								return sv
+							}),
 						})
-					} else {
-						resolve(data.urls?.domainUrl + data.urls?.encryptionUrl)
-					}
+					)
+				} else {
+					snackbar({
+						message: '文件重命名失败',
+						autoHideDuration: 2000,
+						vertical: 'top',
+						horizontal: 'center',
+						backgroundColor: 'var(--saki-default-color)',
+						color: '#fff',
+					}).open()
 				}
-			}
+			},
+		}).open()
+	}),
 
-			reader.readAsArrayBuffer(file)
+	moveToTrash: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileNames: string[]
+		},
+		{
+			state: RootState
+		}
+	>(modeName + '/moveToTrash', async ({ path, fileNames }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+
+		const res = await saass.sdk.moveFilesToTrash(path, fileNames)
+		console.log(res)
+		if (res.code === 200) {
+			thunkAPI.dispatch(
+				methods.folder.setFileTreeList({
+					path: path,
+					list: thunkAPI.getState().folder.fileTree[path].filter((v) => {
+						let flag = false
+
+						v.type === 'File' &&
+							fileNames.some((sv) => {
+								if (sv === v.file?.fileName) {
+									flag = true
+									return true
+								}
+							})
+						return v.type === 'Folder' || (!flag && v.file?.path === path)
+					}),
+				})
+			)
+		} else {
+			snackbar({
+				message: '文件移入回收站失败',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+		}
+	}),
+
+	restore: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileNames: {
+				fileName: string
+				id: string
+			}[]
+		},
+		{
+			state: RootState
+		}
+	>(modeName + '/restore', async ({ path, fileNames }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+
+		let fns = fileNames.map((v) => v.fileName)
+		const res = await saass.sdk.restoreFile(path, fns)
+		console.log(res)
+		if (res.code === 200) {
+			thunkAPI.dispatch(
+				methods.folder.setFileTreeList({
+					path: 'recyclebin',
+					list: thunkAPI
+						.getState()
+						.folder.fileTree['recyclebin'].filter((v) => {
+							let flag = false
+
+							v.type === 'File' &&
+								fileNames.some((sv) => {
+									if (sv.fileName === v.file?.fileName && sv.id === v.file.id) {
+										flag = true
+										return true
+									}
+								})
+							return v.type === 'Folder' || !flag
+						}),
+				})
+			)
+		} else {
+			snackbar({
+				message: '文件恢复失败',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+		}
+	}),
+
+	delete: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileNames: {
+				fileName: string
+				id: string
+			}[]
+		},
+		{
+			state: RootState
+		}
+	>(modeName + '/delete', async ({ path, fileNames }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+
+		let fns = fileNames.map((v) => v.fileName)
+		const res = await saass.sdk.deleteFiles(path, fns)
+		console.log(res)
+		if (res.code === 200) {
+			thunkAPI.dispatch(
+				methods.folder.setFileTreeList({
+					path: 'recyclebin',
+					list: thunkAPI
+						.getState()
+						.folder.fileTree['recyclebin'].filter((v) => {
+							let flag = false
+
+							v.type === 'File' &&
+								fileNames.some((sv) => {
+									if (sv.fileName === v.file?.fileName && sv.id === v.file.id) {
+										flag = true
+										return true
+									}
+								})
+							return v.type === 'Folder' || !flag
+						}),
+				})
+			)
+		} else {
+			snackbar({
+				message: '文件删除失败',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+		}
+	}),
+
+	setFileSharing: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileNames: string[]
+			status: number
+		},
+		{
+			state: RootState
+		}
+	>(
+		modeName + '/setFileSharing',
+		async ({ path, fileNames, status }, thunkAPI) => {
+			const { config, mwc, saass } = thunkAPI.getState()
+			const t = i18n.t
+
+			const res = await saass.sdk.setFileSharing(path, fileNames, status as any)
+			console.log(res)
+			if (res.code === 200) {
+				const { folder } = thunkAPI.getState()
+				thunkAPI.dispatch(
+					folderSlice.actions.setFileTreeList({
+						path,
+						list: folder.fileTree[path]?.map((v) => {
+							if (
+								v.type === 'File' &&
+								v.file?.path === path &&
+								fileNames.includes(v.file.fileName)
+							) {
+								return {
+									...v,
+									file: {
+										...v.file,
+										availableRange: {
+											...v.file.availableRange,
+											allowShare: status as any,
+										},
+									},
+								}
+							}
+							return v
+						}),
+					})
+				)
+			} else {
+				snackbar({
+					message: '分享权限设置失败',
+					autoHideDuration: 2000,
+					vertical: 'top',
+					horizontal: 'center',
+					backgroundColor: 'var(--saki-default-color)',
+					color: '#fff',
+				}).open()
+			}
+		}
+	),
+
+	setFilePassword: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileName: string
+		},
+		{
+			state: RootState
+		}
+	>(modeName + '/setFilePassword', async ({ path, fileName }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+		const t = i18n.t
+
+		let password = md5(String(new Date().getTime())).substring(0, 6)
+		const mp1 = multiplePrompts({
+			title: t('setPassword', {
+				ns: 'myFilesPage',
+			}),
+			multipleInputs: [
+				{
+					label: 'password',
+					value: password,
+					placeholder: t('password', {
+						ns: 'myFilesPage',
+					}),
+					maxLength: 6,
+					type: 'Text',
+					onChange(value) {
+						if (!value) {
+							mp1.setInput({
+								label: 'password',
+								type: 'error',
+								v: t('passwordCannotBeEmpty', {
+									ns: 'myFilesPage',
+								}),
+							})
+							return
+						}
+
+						if (!/^[a-zA-Z0-9_]{0,}$/.test(value.trim())) {
+							mp1.setInput({
+								label: 'password',
+								type: 'error',
+								v: t('passwordRule', {
+									ns: 'myFilesPage',
+								}),
+							})
+							return
+						}
+						if (!/^[\s*\S+?]{6,6}$/.test(value.trim())) {
+							mp1.setInput({
+								label: 'password',
+								type: 'error',
+								v: t('passwordLengthLimited', {
+									ns: 'myFilesPage',
+								}),
+							})
+							return
+						}
+						password = value.trim()
+						mp1.setInput({
+							label: 'password',
+							type: 'error',
+							v: '',
+						})
+						return
+					},
+				},
+			],
+			closeIcon: true,
+			flexButton: true,
+			buttons: [
+				{
+					label: 'randomPassword',
+					text: t('randomPassword', {
+						ns: 'common',
+					}),
+					type: 'Normal',
+					async onTap() {
+						mp1.setInput({
+							label: 'password',
+							type: 'value',
+							v: md5(String(new Date().getTime())).substring(0, 6),
+						})
+					},
+				},
+				{
+					label: 'Next',
+					text: t('next', {
+						ns: 'common',
+					}),
+					type: 'Primary',
+					async onTap() {
+						if (!password) {
+							mp1.setInput({
+								label: 'password',
+								type: 'error',
+								v: t('passwordCannotBeEmpty', {
+									ns: 'myFilesPage',
+								}),
+							})
+							return
+						}
+						mp1.setButton({
+							label: 'Next',
+							type: 'loading',
+							v: true,
+						})
+						mp1.setButton({
+							label: 'Next',
+							type: 'disable',
+							v: true,
+						})
+
+						const res = await saass.sdk.setFilePassword(
+							path,
+							fileName,
+							password
+						)
+						console.log(res)
+						if (res.code === 200) {
+							const { folder } = thunkAPI.getState()
+							thunkAPI.dispatch(
+								folderSlice.actions.setFileTreeList({
+									path,
+									list: folder.fileTree[path]?.map((v) => {
+										if (
+											v.type === 'File' &&
+											v.file?.path === path &&
+											v.file?.fileName === fileName
+										) {
+											return {
+												...v,
+												file: {
+													...v.file,
+													availableRange: {
+														...v.file.availableRange,
+														password: password,
+													},
+												},
+											}
+										}
+										return v
+									}),
+								})
+							)
+							mp1.close()
+						} else {
+							mp1.setInput({
+								label: 'password',
+								type: 'error',
+								v: t('incorrectPasswordReEnter', {
+									ns: 'myFilesPage',
+								}),
+							})
+						}
+						mp1.setButton({
+							label: 'Next',
+							type: 'disable',
+							v: false,
+						})
+						mp1.setButton({
+							label: 'Next',
+							type: 'loading',
+							v: false,
+						})
+					},
+				},
+			],
 		})
+		mp1.open()
+	}),
+
+	clearFilePassword: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileName: string
+		},
+		{
+			state: RootState
+		}
+	>(modeName + '/clearFilePassword', async ({ path, fileName }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+		const t = i18n.t
+
+		const res = await saass.sdk.setFilePassword(path, fileName, 'noPassword')
+		console.log(res)
+		if (res.code === 200) {
+			const { folder } = thunkAPI.getState()
+
+			thunkAPI.dispatch(
+				folderSlice.actions.setFileTreeList({
+					path,
+					list: folder.fileTree[path]?.map((v) => {
+						if (
+							v.type === 'File' &&
+							v.file?.path === path &&
+							v.file?.fileName === fileName
+						) {
+							return {
+								...v,
+								file: {
+									...v.file,
+									availableRange: {
+										...v.file.availableRange,
+										password: '',
+									},
+								},
+							}
+						}
+						return v
+					}),
+				})
+			)
+		} else {
+			snackbar({
+				message: '密码清除失败',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+		}
+	}),
+
+	copy: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileNames: string[]
+			newPath: string
+		},
+		{
+			state: RootState
+		}
+	>(modeName + '/copy', async ({ path, fileNames, newPath }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+		const t = i18n.t
+		if (path === newPath) {
+			return
+		}
+		console.log(path, fileNames, newPath)
+		const res = await saass.sdk.copyFile(path, fileNames, newPath)
+		console.log(res)
+		if (res.code === 200) {
+			// const { folder } = thunkAPI.getState()
+
+			snackbar({
+				message: '复制成功！',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+		} else {
+			snackbar({
+				message: '复制失败',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+		}
+	}),
+
+	move: createAsyncThunk<
+		void,
+		{
+			path: string
+			fileNames: string[]
+			newPath: string
+		},
+		{
+			state: RootState
+		}
+	>(modeName + '/move', async ({ path, fileNames, newPath }, thunkAPI) => {
+		const { config, mwc, saass } = thunkAPI.getState()
+		const t = i18n.t
+		if (path === newPath) {
+			return
+		}
+		console.log(path, fileNames, newPath)
+		const res = await saass.sdk.moveFile(path, fileNames, newPath)
+		console.log(res)
+		if (res.code === 200) {
+			snackbar({
+				message: '移动成功！',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+			thunkAPI.dispatch(
+				methods.folder.setFileTreeList({
+					path: path,
+					list: thunkAPI.getState().folder.fileTree[path].filter((v) => {
+						let flag = false
+
+						v.type === 'File' &&
+							fileNames.some((sv) => {
+								if (sv === v.file?.fileName) {
+									flag = true
+									return true
+								}
+							})
+						return v.type === 'Folder' || (!flag && v.file?.path === path)
+					}),
+				})
+			)
+		} else {
+			snackbar({
+				message: '移动失败',
+				autoHideDuration: 2000,
+				vertical: 'top',
+				horizontal: 'center',
+				backgroundColor: 'var(--saki-default-color)',
+				color: '#fff',
+			}).open()
+		}
 	}),
 }

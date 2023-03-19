@@ -17,6 +17,8 @@ import { resolve } from 'path'
 import { nanoid } from 'nanoid'
 import { sakisso, version, origin, meowWhisperCore } from '../config'
 import { api } from '../modules/electron/api'
+import { ListItem } from './folder'
+import { FileItem, FolderItem } from '../modules/saass'
 
 export const modeName = 'config'
 
@@ -100,6 +102,7 @@ let initialState = {
 	networkStatus: window.navigator.onLine,
 	origin: origin,
 	language: '',
+	languages: ['system', 'zh-CN', 'zh-TW', 'en-US'],
 	deviceType,
 	sync: false,
 	backup: {
@@ -142,7 +145,26 @@ let initialState = {
 	modal: {
 		groupId: '',
 		userId: '',
+		// shareUrl: '',
+		share: {
+			name: '',
+			meowUrl: '',
+			v: undefined as ListItem | undefined,
+		},
+		previewFileUrls: [] as string[],
+		fileDetailPath: '',
+		fileDetailIndex: -1,
+		fileDetailTabLabel: 'Detail' as 'Detail' | 'Statistics' | 'Permissions',
+		copyFiles: {
+			visible: false,
+			path: '',
+			type: 'CopyTo' as 'CopyTo' | 'MoveTo',
+			folders: [] as FolderItem[],
+			files: [] as FileItem[],
+		},
 	},
+	selectedFileList: [] as ListItem[],
+	dirPath: [] as string[],
 	count: {
 		messages: 0,
 		contacts: 0,
@@ -192,6 +214,12 @@ let initialState = {
 				sameElse: 'YYYY-MM-DD HH:mm:ss',
 			},
 		},
+	},
+	fileListSort: {
+		name: 1,
+		lastUpdateTime: 0,
+		deleteTime: 0,
+		size: 0,
 	},
 }
 
@@ -412,6 +440,66 @@ export const configSlice = createSlice({
 		setDev: (state, params: ActionParams<typeof initialState['dev']>) => {
 			state.dev = params.payload
 		},
+		setShareModal: (
+			state,
+			params: ActionParams<typeof initialState['modal']['share']>
+		) => {
+			state.modal.share = params.payload
+		},
+		setPreviewFileModal: (
+			state,
+			params: ActionParams<{
+				previewFileUrls: string[]
+			}>
+		) => {
+			state.modal.previewFileUrls = params.payload.previewFileUrls
+		},
+		setFileListSort: (
+			state,
+			params: ActionParams<typeof initialState['fileListSort']>
+		) => {
+			state.fileListSort = params.payload
+			setTimeout(() => {
+				const { folder } = store.getState()
+				store.dispatch(
+					methods.folder.setFileTreeList({
+						path: folder.parentPath,
+						list: folder.fileTree[folder.parentPath],
+					})
+				)
+			})
+		},
+		setFileDetailIndex: (
+			state,
+			params: ActionParams<{
+				fileDetailIndex: typeof initialState['modal']['fileDetailIndex']
+				fileDetailPath?: typeof initialState['modal']['fileDetailPath']
+				fileDetailTabLabel?: typeof initialState['modal']['fileDetailTabLabel']
+			}>
+		) => {
+			state.modal.fileDetailIndex = params.payload.fileDetailIndex
+			state.modal.fileDetailPath = params.payload.fileDetailPath || ''
+			state.modal.fileDetailTabLabel =
+				params.payload.fileDetailTabLabel || 'Detail'
+		},
+		setModalCopyFiles: (
+			state,
+			params: ActionParams<typeof initialState['modal']['copyFiles']>
+		) => {
+			state.modal.copyFiles = params.payload
+		},
+		setDirPath: (
+			state,
+			params: ActionParams<typeof initialState['dirPath']>
+		) => {
+			state.dirPath = params.payload
+		},
+		setSelectedFileList: (
+			state,
+			params: ActionParams<typeof initialState['selectedFileList']>
+		) => {
+			state.selectedFileList = params.payload
+		},
 	},
 })
 
@@ -472,12 +560,12 @@ export const configMethods = {
 	getDeviceType: createAsyncThunk(
 		modeName + '/getDeviceType',
 		(_, thunkAPI) => {
-			console.log(
-				'getDeviceType',
-				window.innerWidth,
-				window.innerHeight,
-				window.outerHeight
-			)
+			// console.log(
+			// 	'getDeviceType',
+			// 	window.innerWidth,
+			// 	window.innerHeight,
+			// 	window.outerHeight
+			// )
 
 			if (window.innerWidth < 768) {
 				thunkAPI.dispatch(configSlice.actions.setDeviceType('Mobile'))

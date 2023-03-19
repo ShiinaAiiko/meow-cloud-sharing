@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom'
 import logo from '../logo.svg'
 import { Helmet } from 'react-helmet-async'
-import './Index.scss'
+import './Recent.scss'
 import store, {
 	RootState,
 	AppDispatch,
@@ -27,8 +27,8 @@ import { eventTarget } from '../store/config'
 import { contact } from '../protos/proto'
 import MessageContainerComponent from '../components/MessageContainer'
 import DeleteMessagesComponent from '../components/DeleteMessages'
-import { DetailComponent } from '../components/Detail'
 import FileListComponent from '../components/FileList'
+import { DetailComponent } from '../components/Detail'
 import SelectFileListHeaderComponent from '../components/SelectFileListHeader'
 import {
 	byteConvert,
@@ -41,44 +41,15 @@ import MeowWhisperCoreSDK from '../modules/MeowWhisperCoreSDK'
 import moment from 'moment'
 import { FolderItem } from '../modules/saass'
 
-const IndexPage = ({ children }: RouterProps) => {
-	const { t, i18n } = useTranslation('myFilesPage')
+const RecyclebinPage = ({ children }: RouterProps) => {
+	const { t, i18n } = useTranslation('recyclebinPage')
 	const dispatch = useDispatch<AppDispatch>()
 	const config = useSelector((state: RootState) => state.config)
-	const folder = useSelector((state: RootState) => state.folder)
-	const navigate = useNavigate()
-	const location = useLocation()
-	const [searchParams] = useSearchParams()
 
-	const parentPath = searchParams.get('p') || ''
+	const parentPath: string = 'recyclebin'
 
 	useEffect(() => {
-		if (!parentPath) {
-			navigate?.(
-				Query(
-					location.pathname,
-					{
-						p: '/',
-					},
-					searchParams
-				)
-			)
-		} else {
-			dispatch(
-				configSlice.actions.setDirPath(
-					['myFiles'].concat(
-						parentPath.split('/').filter((v, i) => {
-							return v
-						})
-					)
-				)
-			)
-
-			if (parentPath === folder.parentPath) {
-				return
-			}
-			dispatch(folderSlice.actions.setParentPath(parentPath))
-		}
+		dispatch(configSlice.actions.setDirPath(['recyclebin']))
 	}, [parentPath])
 
 	return (
@@ -92,16 +63,16 @@ const IndexPage = ({ children }: RouterProps) => {
 						})}
 				</title>
 			</Helmet>
-			<div className={'index-page ' + config.deviceType}>
+			<div className={'recyclebin-page ' + config.deviceType}>
 				<FileListComponent
 					parentPath={parentPath}
-					showFolderPath={false}
-					showDeleteTime={false}
-					showPermissions
+          showFolderPath
+          showDeleteTime
+					showPermissions={false}
 				></FileListComponent>
 			</div>
 		</>
 	)
 }
 
-export default IndexPage
+export default RecyclebinPage

@@ -1,62 +1,8 @@
 .index-page {
 	width: 100%;
 	height: 100%;
-	// padding: 0 10px;
+	padding: 0 0 0 10px;
 	position: relative;
-	.ip-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 4px 4px 10px;
-		border-bottom: 1px solid #eee;
-		.ip-dirpath {
-			display: flex;
-			justify-content: flex-start;
-			align-items: center;
-			.ip-d-item {
-				display: flex;
-				justify-content: flex-start;
-				align-items: center;
-				span {
-					font-size: 18px;
-					color: #333;
-				}
-				&.active {
-					span {
-						font-weight: 700;
-					}
-				}
-			}
-		}
-		.ip-more {
-		}
-	}
-	.ip-th-item {
-		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-		span {
-			font-size: 14px;
-		}
-	}
-	.ip-tc-item {
-		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-		.item-icon {
-		}
-		.item-name {
-			font-size: 13px;
-			&.lc {
-				color: #777;
-				font-size: 12px;
-			}
-      &:hover{
-        text-decoration: underline;
-        cursor: pointer;
-      }
-		}
-	}
 }
 
 .message-inputbar-button-file {

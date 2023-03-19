@@ -234,13 +234,13 @@ export const emojiMethods = {
 		const { emoji } = thunkAPI.getState()
 		let cs = emoji.customStickers.concat(csi)
 		thunkAPI.dispatch(emojiSlice.actions.setCustomStickers(cs))
-		await thunkAPI
-			.dispatch(
-				methods.file.uploadCustomStickersFile({
-					cs,
-				})
-			)
-			.unwrap()
+		// await thunkAPI
+		// 	.dispatch(
+		// 		methods.file.uploadCustomStickersFile({
+		// 			cs,
+		// 		})
+		// 	)
+		// 	.unwrap()
 	}),
 	deleteCustomSticker: createAsyncThunk<
 		void,
@@ -256,12 +256,12 @@ export const emojiMethods = {
 			return i !== index
 		})
 		thunkAPI.dispatch(emojiSlice.actions.setCustomStickers(cs))
-		await thunkAPI
-			.dispatch(
-				methods.file.uploadCustomStickersFile({
-					cs,
-				})
-			)
-			.unwrap()
+		// await thunkAPI
+		// 	.dispatch(
+		// 		methods.file.uploadCustomStickersFile({
+		// 			cs,
+		// 		})
+		// 	)
+		// 	.unwrap()
 	}),
 }

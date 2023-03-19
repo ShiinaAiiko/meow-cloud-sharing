@@ -1,8 +1,9 @@
 import ChatPage from '../pages/Index'
-import ContactsPage from '../pages/Contacts'
-import NotificationsPage from '../pages/Notifications'
+import RecentPage from '../pages/Recent'
+import RecyclebinPage from '../pages/Recyclebin'
 import SettingsPage from '../pages/Settings'
-import InvitePage from '../pages/Invite'
+import InvitePage from '../pages/Index'
+import DownloadPage from '../pages/Download'
 // import Child from '../pages/child'
 // import Login from '../pages/login'
 // import Community from '../pages/community'
@@ -55,19 +56,27 @@ const routes: Routers[] = [
 	// 	// redirect: '/index',
 	// },
 	{
-		path: '/contacts',
-		title: '联系人',
+		path: '/recent',
+		title: '最近',
 		exact: true,
 		layout: ChatLayout,
-		component: ContactsPage,
+		component: RecentPage,
 		// redirect: '/index',
 	},
 	{
-		path: '/notifications',
-		title: '通知',
+		path: '/dl/:id',
+		title: '下载',
 		exact: true,
 		layout: ChatLayout,
-		component: NotificationsPage,
+		component: DownloadPage,
+		// redirect: '/index',
+	},
+	{
+		path: '/recyclebin',
+		title: '回收站',
+		exact: true,
+		layout: ChatLayout,
+		component: RecyclebinPage,
 		// redirect: '/index',
 	},
 	{

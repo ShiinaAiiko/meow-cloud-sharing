@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { RouterProps, useNavigate } from 'react-router-dom'
 import logo from '../logo.svg'
 import { Helmet } from 'react-helmet-async'
-import './Contacts.scss'
+import './Recent'
 import store, {
 	RootState,
 	AppDispatch,

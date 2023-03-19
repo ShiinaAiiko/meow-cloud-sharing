@@ -10,6 +10,7 @@ let sakisso = {
 	clientUrl: '',
 	serverUrl: '',
 }
+let meowLinkApiUrl = ''
 let serverApi = {
 	apiUrl: '',
 }
@@ -55,6 +56,7 @@ interface Config {
 	baseUrl: typeof baseUrl
 	version: typeof version
 	sakisso: typeof sakisso
+	meowLinkApiUrl: typeof meowLinkApiUrl
 	// serverApi: typeof serverApi
 	// nsocketio: typeof nsocketio
 	staticPathDomain: typeof staticPathDomain
@@ -72,6 +74,8 @@ try {
 		version = pkg.version
 		baseUrl = configJson.baseUrl
 		sakisso = configJson.sakisso
+		meowLinkApiUrl = configJson.meowLinkApiUrl
+
 		// serverApi = configJson.serverApi
 		// nsocketio = configJson.nsocketio
 		staticPathDomain = configJson.staticPathDomain
@@ -94,6 +98,7 @@ export {
 	sakisso,
 	// nsocketio,
 	origin,
+	meowLinkApiUrl,
 	meowApps,
 	meowWhisperCore,
 }

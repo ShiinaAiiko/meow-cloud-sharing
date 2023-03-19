@@ -1,0 +1,98 @@
+.download-page {
+	width: 100%;
+	padding: 20px 10px 0px 10px;
+	position: relative;
+	// display: flex;
+	// flex-direction: column;
+	// justify-content: flex-start;
+	max-width: 700px;
+	margin: 0 auto;
+	// height: 100%;
+
+	.dp-wrap {
+		width: 100%;
+		padding-bottom: 20px;
+		// height: calc(100% - 100px);
+		.dp-logo {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			padding-top: 5%;
+			span {
+				font-size: 24px;
+				margin-left: 10px;
+			}
+		}
+		.dp-input-password {
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			align-items: center;
+			padding-top: 10%;
+			.dp-ip-i-name {
+				display: flex;
+				justify-content: flex-start;
+				align-items: center;
+				margin-bottom: 20px;
+			}
+			.dp-ip-i-input {
+				display: flex;
+				justify-content: center;
+			}
+		}
+		.dp-404 {
+			margin: 80px 0;
+			text-align: center;
+			font-size: 18px;
+			font-weight: 300;
+		}
+		.dp-main {
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			align-items: flex-start;
+			padding-top: 20px;
+			width: 100%;
+			// max-height: 100%;
+			max-width: 700px;
+			.dp-m-header {
+				width: 100%;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 16px;
+				&.Mobile {
+					flex-direction: column;
+					.dp-m-name {
+						margin-bottom: 16px;
+					}
+				}
+				.dp-m-name {
+					display: flex;
+					justify-content: flex-start;
+					align-items: center;
+				}
+				.dp-m-buttons {
+					display: flex;
+					justify-content: center;
+				}
+			}
+			.filelist-table {
+				width: 100%;
+				border: 1px solid #ddd;
+				border-radius: 10px;
+				overflow: hidden;
+			}
+			.dp-m-f-buttons {
+				margin-top: 16px;
+				width: 100%;
+				display: flex;
+				justify-content: flex-end;
+				align-items: center;
+			}
+		}
+	}
+	.dp-footer {
+		margin-top: 40px;
+	}
+}

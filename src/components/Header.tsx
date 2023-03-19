@@ -80,11 +80,11 @@ const HeaderComponent = () => {
 								})}
 							>
 								<img src={config.logo256} alt='' />
-								<span className={'text-elipsis '}>
+								<a href='/' className='copytext text-elipsis'>
 									{t('appTitle', {
 										ns: 'common',
 									})}
-								</span>
+								</a>
 							</div>
 						)}
 					</div>

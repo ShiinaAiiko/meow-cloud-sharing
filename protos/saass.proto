@@ -9,5 +9,6 @@ message GetAppToken {
   message Response {
     string baseUrl = 1;
     string appToken = 2;
+    int64 deadline = 3;
   }
 }

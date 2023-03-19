@@ -84,7 +84,7 @@ export class NetworkStatus extends EventTarget {
 }
 
 function App() {
-	const params = useParams()
+  const params = useParams()
 	const [debounce] = useState(new Debounce())
 	// const location = useLocation()
 	const isDev = process.env.NODE_ENV === 'development'
@@ -98,15 +98,18 @@ function App() {
 	// console.log('isElectron', isElectron)
 	// console.log('isDev', isDev)
 
+	const downloadPage = window.location.pathname.indexOf('/dl') === 0
+
 	useEffect(() => {
 		debounce.increase(async () => {
 			store.dispatch(storageSlice.actions.init('0'))
 			// await store.dispatch(methods.tools.init()).unwrap()
 			await store.dispatch(methods.config.Init()).unwrap()
-			store.dispatch(methods.mwc.Init()).unwrap()
-			await store.dispatch(methods.user.Init()).unwrap()
+			// store.dispatch(methods.mwc.Init()).unwrap()
+			!downloadPage && (await store.dispatch(methods.user.Init()).unwrap())
 			await store.dispatch(methods.sso.Init()).unwrap()
-			await store.dispatch(methods.user.checkToken()).unwrap()
+			!downloadPage &&
+				(await store.dispatch(methods.user.checkToken()).unwrap())
 			// dispatch(methods.appearance.Init()).unwrap()
 			// console.log('location', location)
 			// console.log('config.deviceType getDeviceType', config)

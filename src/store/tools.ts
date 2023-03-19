@@ -131,6 +131,7 @@ export const toolsMethods = {
 			state: RootState
 		}
 	>(modeName + '/copy', async ({ content }, thunkAPI) => {
+		window.navigator.clipboard.writeText(content)
 		snackbar({
 			message: t('copySuccessfully', {
 				ns: 'common',
@@ -141,6 +142,5 @@ export const toolsMethods = {
 			backgroundColor: 'var(--saki-default-color)',
 			color: '#fff',
 		}).open()
-		window.navigator.clipboard.writeText(content)
 	}),
 }

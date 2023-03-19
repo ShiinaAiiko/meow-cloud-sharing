@@ -4,7 +4,6 @@ import (
 	conf "github.com/ShiinaAiiko/meow-cloud-sharing/server/config"
 	"github.com/ShiinaAiiko/meow-cloud-sharing/server/protos"
 	"github.com/ShiinaAiiko/meow-cloud-sharing/server/services/response"
-	"github.com/cherrai/nyanyago-utils/cipher"
 	sso "github.com/cherrai/saki-sso-go"
 	"github.com/gin-gonic/gin"
 )
@@ -44,7 +43,8 @@ func (fc *SAaSSController) GetAppToken(c *gin.Context) {
 
 	// log.Info("ChunkSize", ut)
 	// log.Info("ChunkSize", ut.ChunkSize, chunkSize)
-	token, err := conf.SAaSS.GetAppToken(cipher.MD5(conf.Config.Saass.AppId + authorId))
+	log.Info(conf.SAaSS.GenerateRootPath(authorId), authorId)
+	token, err := conf.SAaSS.GetAppToken(conf.SAaSS.GenerateRootPath(authorId), authorId)
 	log.Info(token, err)
 	if err != nil {
 		res.Error = err.Error()
@@ -55,6 +55,7 @@ func (fc *SAaSSController) GetAppToken(c *gin.Context) {
 	protoData := &protos.GetAppToken_Response{
 		BaseUrl:  conf.Config.Saass.BaseUrl,
 		AppToken: token.Token,
+		Deadline: token.Deadline,
 	}
 
 	res.Data = protos.Encode(protoData)

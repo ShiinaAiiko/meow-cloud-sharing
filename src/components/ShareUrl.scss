@@ -1,0 +1,13 @@
+
+.share-modal {
+	display: flex;
+	align-items: space-between;
+	justify-content: center;
+	flex-direction: column;
+	padding: 0px 20px 20px;
+	.sm-buttons {
+		margin: 10px 0;
+		display: flex;
+		justify-content: flex-end;
+	}
+}

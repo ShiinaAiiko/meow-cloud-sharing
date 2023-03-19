@@ -1,0 +1,22 @@
+.detail-component {
+	width: 100%;
+	height: 100%;
+	.dc-main {
+		padding: 0 10px;
+		width: 100%;
+		height: calc(100% - 56px);
+
+		.dc-m-d-item {
+			word-break: break-all;
+		}
+		.dc-m-p-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			span {
+				word-break: break-all;
+				max-width: 120px;
+			}
+		}
+	}
+}
