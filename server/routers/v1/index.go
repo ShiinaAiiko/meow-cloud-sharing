@@ -13,4 +13,5 @@ type Routerv1 struct {
 func (r Routerv1) Init() {
 	r.Group = r.Engine.Group(r.BaseUrl)
 	r.InitSAaSS()
+	r.InitUser()
 }

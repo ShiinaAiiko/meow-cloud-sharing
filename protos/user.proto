@@ -15,13 +15,11 @@ message SSOUserInfo {
   // -1 | 1 | 2 | 3 | 4 | 5
   int64 gender = 9;
   string birthday = 10;
-	// -1 | 0 | 1
+  // -1 | 0 | 1
   int64 status = 11;
-  message AdditionalInformation {
-  }
+  message AdditionalInformation {}
   AdditionalInformation additionalInformation = 12;
-  message AppData {
-  }
+  message AppData {}
   AppData appData = 13;
   int64 creationTime = 14;
   int64 lastUpdateTime = 15;
@@ -47,4 +45,12 @@ message UserAgent {
   Device device = 2;
   OS os = 3;
   string deviceName = 4;
+}
+
+message GerUsers {
+  message Request { repeated string uids = 1; }
+  message Response {
+    repeated SSOUserInfo list = 1;
+    int64 total = 2;
+  }
 }

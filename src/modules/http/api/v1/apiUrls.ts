@@ -1,3 +1,1 @@
-export const apiUrls = {
-	getAppToken: '/saass/appToken/get',
-}
+export const apiUrls = {}

@@ -41,6 +41,8 @@ import {
 	SType,
 } from '@nyanyajs/utils/dist/saass'
 import { ListItem } from '../store/folder'
+import { api } from '../modules/http/api'
+import { protoRoot } from '../protos'
 
 const DownloadPage = ({ children }: RouterProps) => {
 	const { t, i18n } = useTranslation('downloadPage')
@@ -65,6 +67,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 	const [accessToken, setAccessToken] = useState<{
 		[id: string]: AccessToken
 	}>({})
+	const [user, setUser] = useState<protoRoot.user.SSOUserInfo>()
 
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -123,6 +126,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 					setInputPassword(false)
 				}
 				if (fires.code === 200 || (fires.code === 10023 && fires.data)) {
+					getUser(fires.data?.availableRange?.authorId || '')
 					setName(fires.data?.fileName || '')
 
 					setSelectContents([
@@ -164,6 +168,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 						setInputPassword(false)
 					}
 					if (fores.code === 200 || (fores.code === 10023 && fores.data)) {
+						getUser(fores.data?.availableRange.authorId || '')
 						setName(fores.data?.folderName || '')
 						fores.data?.accessToken &&
 							setAccessToken({
@@ -263,6 +268,16 @@ const DownloadPage = ({ children }: RouterProps) => {
 		setLoading(false)
 		// setPassword('082108')
 	}
+
+	const getUser = async (uid: string) => {
+		const getUsers = await api.v1.gerUsers({
+			uids: [uid],
+		})
+		console.log('getUsers', getUsers, 1, uid)
+		if (getUsers.code === 200 && getUsers.data?.total && getUsers.data?.list) {
+			setUser(getUsers.data?.list?.[0] as any)
+		}
+	}
 	const share = () => {
 		copyUrl(
 			window.location.origin +
@@ -338,16 +353,14 @@ const DownloadPage = ({ children }: RouterProps) => {
 										width='30px'
 										height='30px'
 										margin='0 6px 0 0'
-										nickname={'Shiina Aiiko'}
-										src={
-											'https://saass.aiiko.club/s/c61baa0aa19cf71fae58b8f54afc4a60?x-saass-process=image/resize,160,70'
-										}
+										nickname={user?.nickname || ''}
+										src={user?.avatar || ''}
 									></saki-avatar>
 									<span>
 										{t('sharedAnEncryptedContent', {
 											ns: 'downloadPage',
 										})
-											.replace('{{name}}', 'Shiina Aiiko')
+											.replace('{{name}}', user?.nickname || '')
 											.replace(
 												'{{type}}',
 												type === 'File'
@@ -425,16 +438,14 @@ const DownloadPage = ({ children }: RouterProps) => {
 											width='30px'
 											height='30px'
 											margin='0 6px 0 0'
-											nickname={'Shiina Aiiko'}
-											src={
-												'https://saass.aiiko.club/s/c61baa0aa19cf71fae58b8f54afc4a60?x-saass-process=image/resize,160,70'
-											}
+                      nickname={user?.nickname || ''}
+                      src={user?.avatar || ''}
 										></saki-avatar>
 										<span>
 											{t('sharedAnEncryptedContent', {
 												ns: 'downloadPage',
 											})
-												.replace('{{name}}', 'Shiina Aiiko')
+											.replace('{{name}}', user?.nickname || '')
 												.replace(
 													'{{type}}',
 													type === 'File'

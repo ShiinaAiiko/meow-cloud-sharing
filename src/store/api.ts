@@ -32,6 +32,7 @@ export const apiSlice = createSlice({
 			v1: {
 				baseUrl: '/api/v1',
 				getAppToken: '/saass/appToken/get',
+        gerUsers: '/user/gerUsers',
 			},
 		},
 		NSocketIoEventNames: {
