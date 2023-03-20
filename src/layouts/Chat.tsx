@@ -16,9 +16,6 @@ import store, {
 	AppDispatch,
 	methods,
 	configSlice,
-	contactsSlice,
-	groupSlice,
-	messagesSlice,
 } from '../store'
 import { getI18n, useTranslation } from 'react-i18next'
 // import { userAgent } from './userAgent'
@@ -31,15 +28,13 @@ import {
 import * as nyanyalog from 'nyanyajs-log'
 import HeaderComponent from '../components/Header'
 import FooterComponent from '../components/Footer'
-import UserInfoComponent from '../components/UserInfo'
-import UserLoginComponent from '../components/UserLogin'
-import CallComponent from '../components/Call'
 import SettingsComponent from '../components/Settings'
 import NavigatorComponent from '../components/Navigator'
 import ShareUrlComponent from '../components/ShareUrl'
 import PreviewFileComponent from '../components/PreviewFile'
 import CopyFilesComponent from '../components/CopyFiles'
 import SelectFileListHeaderComponent from '../components/SelectFileListHeader'
+import DirPathComponent from '../components/DirPath'
 
 import { DetailModalComponent } from '../components/Detail'
 import { storage } from '../store/storage'
@@ -47,9 +42,7 @@ import { bindEvent } from '@saki-ui/core'
 import md5 from 'blueimp-md5'
 import { sakiui } from '../config'
 import { deleteFilesOrFolders, Query, restore } from '../modules/methods'
-import { l } from '../modules/MeowWhisperCoreSDK/languages'
-import MeowWhisperCoreSDK from '../modules/MeowWhisperCoreSDK'
-import { FileItem, FolderItem } from '../modules/saass'
+import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
 // import parserFunc from 'ua-parser-js'
 
 const ChatLayout = ({ children }: RouterProps) => {
@@ -62,13 +55,9 @@ const ChatLayout = ({ children }: RouterProps) => {
 	const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
 
 	const appStatus = useSelector((state: RootState) => state.config.status)
-	const mwc = useSelector((state: RootState) => state.mwc)
-	const messages = useSelector((state: RootState) => state.messages)
 	const folder = useSelector((state: RootState) => state.folder)
 
 	const config = useSelector((state: RootState) => state.config)
-	const contacts = useSelector((state: RootState) => state.contacts)
-	const group = useSelector((state: RootState) => state.group)
 	const user = useSelector((state: RootState) => state.user)
 	const saass = useSelector((state: RootState) => state.saass)
 
@@ -109,50 +98,6 @@ const ChatLayout = ({ children }: RouterProps) => {
 		}
 		init()
 	}, [user.isInit, user.isLogin])
-
-	useEffect(() => {
-		console.log('开始获取 getContacts', user.isLogin, mwc.encryptionStatus)
-		if (user.isLogin && mwc.encryptionStatus === 'success') {
-			// dispatch(methods.messages.getRecentChatDialogueList())
-			// dispatch(methods.emoji.init())
-			// dispatch(methods.contacts.getContactList())
-			// dispatch(methods.group.getGroupList())
-			// dispatch(methods.messages.getRecentChatDialogueList())
-		}
-		if (!user.isLogin) {
-			// dispatch(contactsSlice.actions.setContacts([]))
-			// dispatch(groupSlice.actions.setGroupList([]))
-			// dispatch(messagesSlice.actions.setRecentChatDialogueList([]))
-		}
-	}, [user.isLogin, mwc.encryptionStatus])
-
-	useEffect(() => {
-		if (
-			mwc.nsocketioStatus === 'connected' &&
-			contacts.isInit &&
-			group.isInit
-		) {
-			dispatch(methods.messages.initRooms())
-			// setTimeout(() => {
-			// 	window.location.reload()
-			// }, 2000)
-		}
-	}, [contacts.isInit, group.isInit, mwc.nsocketioStatus])
-
-	useEffect(() => {
-		if (messages.recentChatDialogueList.length) {
-			messages.recentChatDialogueList.forEach((v) => {})
-			dispatch(
-				configSlice.actions.setCount({
-					type: 'messages',
-					value: messages.recentChatDialogueList.reduce(
-						(acc, v) => acc + Number(v.unreadMessageCount),
-						0
-					),
-				})
-			)
-		}
-	}, [messages.recentChatDialogueList])
 
 	useEffect(() => {
 		if (
@@ -216,10 +161,6 @@ const ChatLayout = ({ children }: RouterProps) => {
 			}
 		}
 	}, [config.dev.log])
-
-	useEffect(() => {
-		mwc.sdk?.setLanguage(getI18n().language)
-	}, [config.language])
 
 	return (
 		<>
@@ -448,141 +389,47 @@ const ChatLayout = ({ children }: RouterProps) => {
 												{location.pathname === '/' ||
 												location.pathname === '/recent' ||
 												location.pathname === '/recyclebin' ? (
-													<div className='ip-dirpath'>
-														{config.dirPath.map((v, i) => {
-															let startIndex = 2
+													<DirPathComponent
+														dirPath={config.dirPath}
+														onClick={(path,index) => {
 															if (
-																config.dirPath.length >= 3 &&
-																i >= startIndex &&
-																i < config.dirPath.length - 2
+																path === 'myFiles' ||
+																path === 'recent' ||
+																path === 'recyclebin'
 															) {
-																return i === startIndex ? (
-																	<div key={i} className={'ip-d-item '}>
-																		<saki-button
-																			padding='4px 6px'
-																			border='none'
-																			border-radius='6px'
-																		>
-																			<span className='text-elipsis'>...</span>
-																		</saki-button>
-																		<saki-icon
-																			padding='0 4px'
-																			width='12px'
-																			height='12px'
-																			color='#999'
-																			type='Right'
-																		></saki-icon>
-																	</div>
-																) : (
-																	''
+																navigate?.(
+																	Query(
+																		location.pathname,
+																		{
+																			p: '/',
+																		},
+																		searchParams
+																	)
+																)
+															} else {
+																navigate?.(
+																	Query(
+																		location.pathname,
+																		{
+																			p:
+																				'/' +
+																				config.dirPath
+																					.filter((sv, si) => {
+																						return (
+																							sv !== 'myFiles' &&
+																							sv !== 'recent' &&
+																							sv !== 'recyclebin' &&
+																							si <= index
+																						)
+																					})
+																					.join('/'),
+																		},
+																		searchParams
+																	)
 																)
 															}
-															return (
-																<div
-																	key={i}
-																	className={
-																		'ip-d-item ' +
-																		(i === config.dirPath.length - 1
-																			? 'active'
-																			: '')
-																	}
-																>
-																	<saki-button
-																		ref={bindEvent({
-																			tap: () => {
-																				console.log(
-																					config.dirPath,
-																					i,
-																					'/' +
-																						config.dirPath
-																							.filter((v) => {
-																								return (
-																									v !== 'myFiles' &&
-																									v !== 'recent' &&
-																									v !== 'recyclebin'
-																								)
-																							})
-																							.join('/')
-																				)
-																				if (
-																					v === 'myFiles' ||
-																					v === 'recent' ||
-																					v === 'recyclebin'
-																				) {
-																					navigate?.(
-																						Query(
-																							location.pathname,
-																							{
-																								p: '/',
-																							},
-																							searchParams
-																						)
-																					)
-																				} else {
-																					navigate?.(
-																						Query(
-																							location.pathname,
-																							{
-																								p:
-																									'/' +
-																									config.dirPath
-																										.filter((sv, si) => {
-																											return (
-																												sv !== 'myFiles' &&
-																												sv !== 'recent' &&
-																												sv !== 'recyclebin' &&
-																												si <= i
-																											)
-																										})
-																										.join('/'),
-																							},
-																							searchParams
-																						)
-																					)
-																				}
-																			},
-																		})}
-																		padding='4px 6px'
-																		border='none'
-																		border-radius='6px'
-																	>
-																		<span
-																			className={
-																				i === config.dirPath.length - 1
-																					? ''
-																					: 'text-elipsis'
-																			}
-																		>
-																			{v === 'myFiles'
-																				? t('pageTitle', {
-																						ns: 'myFilesPage',
-																				  })
-																				: v === 'recent'
-																				? t('pageTitle', {
-																						ns: 'recentPage',
-																				  })
-																				: v === 'recyclebin'
-																				? t('pageTitle', {
-																						ns: 'recyclebinPage',
-																				  })
-																				: v}
-																		</span>
-																	</saki-button>
-																	{i !== config.dirPath.length - 1 ? (
-																		<saki-icon
-																			padding='0 4px'
-																			width='12px'
-																			height='12px'
-																			color='#999'
-																			type='Right'
-																		></saki-icon>
-																	) : (
-																		''
-																	)}
-																</div>
-															)
-														})}
-													</div>
+														}}
+													></DirPathComponent>
 												) : (
 													''
 												)}
@@ -789,9 +636,6 @@ const ChatLayout = ({ children }: RouterProps) => {
 						)}
 					</div>
 					<SettingsComponent></SettingsComponent>
-					{/* <UserLoginComponent></UserLoginComponent> */}
-					<UserInfoComponent></UserInfoComponent>
-					<CallComponent></CallComponent>
 					<ShareUrlComponent></ShareUrlComponent>
 					<PreviewFileComponent></PreviewFileComponent>
 					<DetailModalComponent></DetailModalComponent>

@@ -12,15 +12,8 @@ import { configMethods, configSlice } from './config'
 import { userMethods, userSlice } from './user'
 import { apiMethods, apiSlice } from './api'
 import { ssoMethods, ssoSlice } from './sso'
-import { encryptionMethods, encryptionSlice } from './encryption'
-import { mwcMethods, mwcSlice } from './mwc'
-import { contactsMethods, contactsSlice } from './contacts'
-import { groupMethods, groupSlice } from './group'
-import { messagesMethods, messagesSlice } from './messages'
-import { callMethods, callSlice } from './call'
 import { fileMethods, fileSlice } from './file'
 import { toolsMethods, toolsSlice } from './tools'
-import { emojiMethods, emojiSlice } from './emoji'
 import { folderMethods, folderSlice } from './folder'
 import { saassMethods, saassSlice } from './saass'
 
@@ -35,15 +28,8 @@ const rootReducer = combineReducers({
 	user: userSlice.reducer,
 	api: apiSlice.reducer,
 	sso: ssoSlice.reducer,
-	mwc: mwcSlice.reducer,
-	encryption: encryptionSlice.reducer,
-	contacts: contactsSlice.reducer,
-	group: groupSlice.reducer,
-	messages: messagesSlice.reducer,
-	call: callSlice.reducer,
 	file: fileSlice.reducer,
 	tools: toolsSlice.reducer,
-	emoji: emojiSlice.reducer,
 	folder: folderSlice.reducer,
 	saass: saassSlice.reducer,
 })
@@ -61,15 +47,8 @@ export {
 	storageSlice,
 	configSlice,
 	ssoSlice,
-	mwcSlice,
-	encryptionSlice,
-	contactsSlice,
-	groupSlice,
-	messagesSlice,
-	callSlice,
 	fileSlice,
 	toolsSlice,
-	emojiSlice,
 	folderSlice,
 	saassSlice,
 }
@@ -79,15 +58,8 @@ export const methods = {
 	user: userMethods,
 	api: apiMethods,
 	sso: ssoMethods,
-	mwc: mwcMethods,
-	encryption: encryptionMethods,
-	contacts: contactsMethods,
-	group: groupMethods,
-	messages: messagesMethods,
-	call: callMethods,
 	file: fileMethods,
 	tools: toolsMethods,
-	emoji: emojiMethods,
 	folder: folderMethods,
 	saass: saassMethods,
 }

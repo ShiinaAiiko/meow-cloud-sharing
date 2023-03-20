@@ -43,8 +43,6 @@ func InitRouter() {
 	// 错误中间件
 	Router.Use(middleware.Error())
 	// 处理解密加密
-	Router.Use(middleware.Encryption())
-	Router.Use(middleware.CheckApp())
 	Router.Use(middleware.Authorize())
 	// midArr := [...]gin.HandlerFunc{GinMiddleware("*"), middleware.Authorize()}
 	// fmt.Println(midArr)

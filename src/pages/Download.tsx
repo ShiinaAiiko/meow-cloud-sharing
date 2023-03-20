@@ -15,7 +15,6 @@ import store, {
 	useAppDispatch,
 	methods,
 	configSlice,
-	messagesSlice,
 	folderSlice,
 } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -25,23 +24,17 @@ import { useTranslation } from 'react-i18next'
 import { Debounce, deepCopy } from '@nyanyajs/utils'
 import { TransitionGroup, CSSTransition } from 'react-transition-group'
 import { eventTarget } from '../store/config'
-import { contact } from '../protos/proto'
-import MessageContainerComponent from '../components/MessageContainer'
-import DeleteMessagesComponent from '../components/DeleteMessages'
 import FooterComponent from '../components/Footer'
-import { DetailComponent } from '../components/Detail'
-import SelectFileListHeaderComponent from '../components/SelectFileListHeader'
+import DirPathComponent from '../components/DirPath'
 import {
 	byteConvert,
 	download,
-	getDialogueInfo,
 	getLink,
 	PathJoin,
 	Query,
 } from '../modules/methods'
-import MeowWhisperCoreSDK from '../modules/MeowWhisperCoreSDK'
 import moment from 'moment'
-import { AccessToken, FileItem, FolderItem, SType } from '../modules/saass'
+import { AccessToken, FileItem, FolderItem, SType } from '@nyanyajs/utils/dist/saass'
 import { ListItem } from '../store/folder'
 
 const DownloadPage = ({ children }: RouterProps) => {
@@ -62,6 +55,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 	const [password, setPassword] = useState('')
 	const [name, setName] = useState('')
 	const [path, setPath] = useState('')
+	const [dirPath, setDirPath] = useState([] as string[])
 	const [type, setType] = useState<SType>()
 	const [accessToken, setAccessToken] = useState<{
 		[id: string]: AccessToken
@@ -75,6 +69,13 @@ const DownloadPage = ({ children }: RouterProps) => {
 		// setPath('downloads')
 	}, [params.id])
 	useEffect(() => {
+		if (path) {
+			setDirPath(
+				path.split('/').filter((v, i) => {
+					return v
+				})
+			)
+		}
 		debounce.increase(() => {
 			type && path && getData()
 		}, 50)
@@ -502,7 +503,42 @@ const DownloadPage = ({ children }: RouterProps) => {
 										''
 									)}
 								</div>
-
+								{type === 'Folder' ? (
+									<div className='dp-dirpath'>
+										<DirPathComponent
+											dirPath={dirPath}
+											onClick={(path, index) => {
+												if (path === 'downloads') {
+													navigate?.(
+														Query(
+															location.pathname,
+															{
+																p: 'downloads',
+															},
+															searchParams
+														)
+													)
+												} else {
+													navigate?.(
+														Query(
+															location.pathname,
+															{
+																p: dirPath
+																	.filter((sv, si) => {
+																		return si <= index
+																	})
+																	.join('/'),
+															},
+															searchParams
+														)
+													)
+												}
+											}}
+										></DirPathComponent>
+									</div>
+								) : (
+									''
+								)}
 								<div className='filelist-table'>
 									<saki-checkbox
 										ref={bindEvent({
@@ -587,6 +623,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 														// ?.concat(folder.fileTree?.[path] || [])
 														// ?.concat(folder.fileTree?.[path] || [])
 														?.map((v, i) => {
+															const key = v.file?.id || v.folder?.id
 															return (
 																<saki-checkbox-item
 																	only-icon-clickable
@@ -595,10 +632,34 @@ const DownloadPage = ({ children }: RouterProps) => {
 																	background-color=''
 																	background-hover-color='#eee'
 																	background-active-color='#e2e2e2'
-																	value={v.file?.id || v.folder?.id}
+																	value={key}
 																	key={i}
 																>
 																	<saki-table-column
+																		onClick={(e: any) => {
+																			e.stopPropagation()
+
+																			if (
+																				selectContents.filter(
+																					(sv) =>
+																						key ===
+																						(sv.file?.id || sv.folder?.id)
+																				).length
+																			) {
+																				setSelectContents(
+																					selectContents?.filter((sv) => {
+																						return (
+																							key !==
+																							(sv.file?.id || sv.folder?.id)
+																						)
+																					})
+																				)
+																			} else {
+																				setSelectContents(
+																					selectContents.concat(v)
+																				)
+																			}
+																		}}
 																		onContextMenu={(e: any) => {
 																			e.preventDefault()
 																			const em = e as MouseEvent
@@ -636,7 +697,9 @@ const DownloadPage = ({ children }: RouterProps) => {
 																			height='30px'
 																		>
 																			<div
-																				onClick={() => {
+																				onClick={(e) => {
+																					console.log(34343)
+																					e.stopPropagation()
 																					if (v.folder) {
 																						navigate?.(
 																							Query(
@@ -706,7 +769,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 													case 'Preview':
 														if (v.file) {
 															window.open(
-																v.file.urls.domainUrl + v.file?.urls.shortUrl
+																v.file.urls.domainUrl + v.file?.urls.url
 															)
 														}
 														break

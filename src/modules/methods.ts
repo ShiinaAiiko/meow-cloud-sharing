@@ -2,38 +2,13 @@ import { protoRoot } from '../protos'
 import store, { configSlice, methods } from '../store'
 import qs from 'qs'
 import axios from 'axios'
-import { FileItem, FolderItem } from './saass'
+import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
 import { alert, snackbar } from '@saki-ui/core'
 import i18n from './i18n/i18n'
 import { meowLinkApiUrl } from '../config'
 import { ListItem } from '../store/folder'
 const t = i18n.t
 
-export const getDialogueInfo = (v: any) => {
-	const { mwc } = store.getState()
-	if (!v)
-		return {
-			avatar: '',
-			name: '',
-			bio: '',
-		}
-	if (v.type === 'Group') {
-		const ginfo = mwc.cache.group.get(v.id || '')
-
-		return {
-			avatar: ginfo?.avatar || '',
-			name: ginfo?.name || '',
-			bio: '',
-		}
-	}
-	const uinfo = mwc.cache.userInfo.get(v.id || '')
-
-	return {
-		avatar: uinfo?.userInfo?.avatar || '',
-		name: uinfo?.userInfo?.nickname || '',
-		bio: uinfo?.userInfo?.bio || '',
-	}
-}
 
 export const Query = (
 	url: string,

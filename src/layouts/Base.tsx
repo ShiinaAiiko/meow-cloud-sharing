@@ -27,9 +27,6 @@ import {
 } from '@nyanyajs/utils'
 import * as nyanyalog from 'nyanyajs-log'
 import HeaderComponent from '../components/Header'
-import UserInfoComponent from '../components/UserInfo'
-import UserLoginComponent from '../components/UserLogin'
-import CallComponent from '../components/Call'
 import SettingsComponent from '../components/Settings'
 
 import { storage } from '../store/storage'
@@ -49,12 +46,8 @@ const BaseLayout = ({ children }: RouterProps) => {
 	const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
 
 	const appStatus = useSelector((state: RootState) => state.config.status)
-	const mwc = useSelector((state: RootState) => state.mwc)
-	const messages = useSelector((state: RootState) => state.messages)
 	
 	const config = useSelector((state: RootState) => state.config)
-	const contacts = useSelector((state: RootState) => state.contacts)
-	const group = useSelector((state: RootState) => state.group)
 	const user = useSelector((state: RootState) => state.user)
 	const sso = useSelector((state: RootState) => state.sso)
 
@@ -85,15 +78,6 @@ const BaseLayout = ({ children }: RouterProps) => {
 		// store.dispatch(storageSlice.actions.init())
 	}, [])
 
-	useEffect(() => {
-		const init = async () => {
-			if (user.isInit && user.isLogin) {
-				await mwc.sdk?.encryption.init()
-			}
-		}
-		init()
-	}, [user.isInit, user.isLogin])
-
 	return (
 		<>
 			<Helmet>
@@ -107,7 +91,6 @@ const BaseLayout = ({ children }: RouterProps) => {
 				<HeaderComponent></HeaderComponent>
 				<div className={'cl-main '}>{children}</div>
 				<SettingsComponent></SettingsComponent>
-				<UserLoginComponent></UserLoginComponent>
 				<Login />
 			</div>
 		</>

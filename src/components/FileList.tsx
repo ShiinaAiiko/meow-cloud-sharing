@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { bindEvent } from '../modules/bindEvent'
+
 
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
@@ -10,14 +10,12 @@ import store, {
 	methods,
 	configSlice,
 	userSlice,
-	contactsSlice,
 	folderSlice,
 } from '../store'
 import './FileList.scss'
 import { useTranslation } from 'react-i18next'
-import { prompt, alert, snackbar } from '@saki-ui/core'
+import { prompt, alert, snackbar,bindEvent  } from '@saki-ui/core'
 import { eventTarget } from '../store/config'
-import { SyncOff } from './Icon'
 import { Debounce } from '@nyanyajs/utils'
 import { DetailComponent } from '../components/Detail'
 import {
@@ -30,7 +28,7 @@ import {
 	restore,
 } from '../modules/methods'
 import moment from 'moment'
-import { FileItem, FolderItem } from '../modules/saass'
+import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
 
 const FileListComponent = ({
 	parentPath,
@@ -409,6 +407,12 @@ const FileListComponent = ({
 										{
 											// ?.concat(folder.fileTree?.[parentPath] || [])
 											folder.fileTree?.[parentPath]?.map((v, i) => {
+												const key =
+													v.path +
+													'-' +
+													v.type +
+													'-' +
+													(v.file?.id || v.folder?.id)
 												return (
 													<saki-checkbox-item
 														only-icon-clickable
@@ -418,16 +422,45 @@ const FileListComponent = ({
 														background-color=''
 														background-hover-color='#eee'
 														background-active-color='#ddd'
-														value={
-															v.path +
-															'-' +
-															v.type +
-															'-' +
-															(v.file?.id || v.folder?.id)
-														}
+														value={key}
 														key={i}
 													>
 														<saki-table-column
+															onClick={(e: any) => {
+																e.stopPropagation()
+
+																if (
+																	config.selectedFileList.filter(
+																		(sv) =>
+																			key ===
+																			sv.path +
+																				'-' +
+																				sv.type +
+																				'-' +
+																				(sv.file?.id || sv.folder?.id)
+																	).length
+																) {
+																	dispatch(
+																		configSlice.actions.setSelectedFileList(
+																			config.selectedFileList?.filter(
+																				(sv) =>
+																					key !==
+																					sv.path +
+																						'-' +
+																						sv.type +
+																						'-' +
+																						(sv.file?.id || sv.folder?.id)
+																			)
+																		)
+																	)
+																} else {
+																	dispatch(
+																		configSlice.actions.setSelectedFileList(
+																			config.selectedFileList.concat(v)
+																		)
+																	)
+																}
+															}}
 															onContextMenu={(e: any) => {
 																e.preventDefault()
 																const em = e as MouseEvent
@@ -465,7 +498,8 @@ const FileListComponent = ({
 																height='30px'
 															>
 																<div
-																	onClick={() => {
+																	onClick={(e) => {
+																		e.stopPropagation()
 																		if (parentPath === 'recyclebin') return
 
 																		if (v.type === 'Folder') {

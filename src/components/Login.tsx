@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { bindEvent } from '../modules/bindEvent'
+
 
 import { useSelector, useDispatch } from 'react-redux'
 import store, {
@@ -12,7 +12,7 @@ import store, {
 } from '../store'
 import './Login.scss'
 import { useTranslation } from 'react-i18next'
-import { prompt, alert } from '@saki-ui/core'
+import { prompt, alert,bindEvent  } from '@saki-ui/core'
 import { Debounce } from '@nyanyajs/utils'
 import { sakisso } from '../config'
 

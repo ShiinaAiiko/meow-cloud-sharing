@@ -14,7 +14,7 @@ import { getI18n } from 'react-i18next'
 import { stringify } from 'querystring'
 import { resolve } from 'path'
 import { nanoid } from 'nanoid'
-import { meowWhisperCore } from '../config'
+import { server } from '../config'
 
 export const modeName = 'api'
 
@@ -27,27 +27,16 @@ export const apiMethods = {
 export const apiSlice = createSlice({
 	name: modeName,
 	initialState: {
-		apiUrl: meowWhisperCore.url,
+		apiUrl: server.url,
 		apiNames: {
 			v1: {
 				baseUrl: '/api/v1',
 				getAppToken: '/saass/appToken/get',
-
-				syncToServer: '/sync/toserver',
-				getUrls: '/sync/geturls',
-				getFolderFiles: '/sync/getfolderfiles',
-				GetNote: '/sync/getnote',
-				getUploadToken: '/file/getUploadToken',
-				createSSOAppToken: '/sso/createAppToken',
 			},
 		},
 		NSocketIoEventNames: {
 			v1: {
 				Error: 'Error',
-				OtherDeviceOnline: 'OtherDeviceOnline',
-				OtherDeviceOffline: 'OtherDeviceOffline',
-				OnForceOffline: 'OnForceOffline',
-				SyncData: 'SyncData',
 			},
 		},
 	},

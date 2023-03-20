@@ -18,8 +18,8 @@ root.render(
 	</React.StrictMode>
 )
 
-// serviceWorkerRegistration.unregister()
-// serviceWorkerRegistration.register()
+serviceWorkerRegistration.unregister()
+serviceWorkerRegistration.register()
 // serviceWorkerRegistration.watchPush()
 // serviceWorkerRegistration.push()
 

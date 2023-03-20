@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { bindEvent } from '../modules/bindEvent'
+
 
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -13,10 +13,8 @@ import store, {
 } from '../store'
 import './Header.scss'
 import { useTranslation } from 'react-i18next'
-import { prompt, alert, snackbar } from '@saki-ui/core'
+import { prompt, alert, snackbar,bindEvent  } from '@saki-ui/core'
 import { eventTarget } from '../store/config'
-import { SyncOff } from './Icon'
-import { api } from '../modules/electron/api'
 
 const HeaderComponent = () => {
 	const { t, i18n } = useTranslation('index-header')
@@ -115,9 +113,7 @@ const HeaderComponent = () => {
 							},
 						})}
 						disable-open-web-page
-						language={
-							config.language === 'system' ? i18n.language : config.language
-						}
+						language={i18n.language}
 					/>
 				</div>
 
@@ -176,7 +172,7 @@ const HeaderComponent = () => {
 											break
 
 										case 'OpenDevTools':
-											api.openDevTools()
+											// api.openDevTools()
 											break
 										case 'Login':
 											dispatch(

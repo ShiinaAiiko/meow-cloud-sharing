@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { bindEvent } from '../modules/bindEvent'
 
 import { useSelector, useDispatch } from 'react-redux'
 import store, {
@@ -12,8 +11,7 @@ import store, {
 } from '../store'
 import './Detail.scss'
 import { useTranslation } from 'react-i18next'
-import { prompt, alert } from '@saki-ui/core'
-import { Debounce } from '@nyanyajs/utils'
+import { prompt, alert, bindEvent } from '@saki-ui/core'
 import { sakisso } from '../config'
 import { byteConvert } from '../modules/methods'
 import moment from 'moment'
@@ -189,7 +187,11 @@ export const DetailComponent = () => {
 							</div>
 						</saki-scroll-view>
 					</saki-tabs-item>
-					<saki-tabs-item font-size='14px' label='Statistics' name={t("statistics")}>
+					<saki-tabs-item
+						font-size='14px'
+						label='Statistics'
+						name={t('statistics')}
+					>
 						<saki-scroll-view mode='Auto'>
 							<div>
 								{v?.type === 'File' ? (
@@ -207,7 +209,11 @@ export const DetailComponent = () => {
 							</div>
 						</saki-scroll-view>
 					</saki-tabs-item>
-					<saki-tabs-item font-size='14px' label='Permissions' name={t("permissions")}>
+					<saki-tabs-item
+						font-size='14px'
+						label='Permissions'
+						name={t('permissions')}
+					>
 						<saki-scroll-view mode='Auto'>
 							<div>
 								{v?.type === 'File' || v?.type === 'Folder' ? (
@@ -311,13 +317,13 @@ export const DetailComponent = () => {
 								{v?.type === 'File' || v?.type === 'Folder' ? (
 									<>
 										<saki-title margin='18px 0 6px' level='5' color='default'>
-											{t("password")}
+											{t('password')}
 										</saki-title>
 										<div className='dc-m-p-item'>
 											<span>
 												{v.file?.availableRange.password ||
 													v.folder?.availableRange.password ||
-													t("passwordNotSet")}
+													t('passwordNotSet')}
 											</span>
 
 											<saki-row>
@@ -348,7 +354,7 @@ export const DetailComponent = () => {
 														border='none'
 														type='Normal'
 													>
-														<span>{t("deletePassword")}</span>
+														<span>{t('deletePassword')}</span>
 													</saki-button>
 												) : (
 													''
@@ -356,7 +362,6 @@ export const DetailComponent = () => {
 												<saki-button
 													ref={bindEvent({
 														tap: () => {
-
 															if (v.type === 'Folder') {
 																dispatch(
 																	methods.folder.setFolderPassword({
@@ -377,10 +382,10 @@ export const DetailComponent = () => {
 													padding='6px 10px'
 													type='Primary'
 												>
-													<span >
+													<span>
 														{v.file?.availableRange.password
-															? t("changePassword")
-															: t("setPassword")}
+															? t('changePassword')
+															: t('setPassword')}
 													</span>
 												</saki-button>
 											</saki-row>

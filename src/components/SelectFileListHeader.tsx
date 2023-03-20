@@ -11,7 +11,7 @@ import { R } from '../store/config'
 import { meowLinkApiUrl } from '../config'
 import axios from 'axios'
 import { useLocation } from 'react-router-dom'
-import { FileItem, FolderItem } from '../modules/saass'
+import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
 import { deleteFilesOrFolders, moveToTrash, restore } from '../modules/methods'
 
 const SelectFileListHeaderComponent = () => {

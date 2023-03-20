@@ -182,7 +182,7 @@ function App() {
 			}
 		}, 10)
 	}, [])
-	console.log('meowApps?.jsurl ', meowApps?.jsurl)
+	// console.log('meowApps?.jsurl ', meowApps?.jsurl)
 	return (
 		<Provider store={store}>
 			<HelmetProvider>

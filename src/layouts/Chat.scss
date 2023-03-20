@@ -162,29 +162,7 @@
 					display: flex;
 					justify-content: flex-start;
 					align-items: center;
-					.ip-dirpath {
-						display: flex;
-						justify-content: flex-start;
-						align-items: center;
-						padding-left: 4px;
-						.ip-d-item {
-							display: flex;
-							justify-content: flex-start;
-							align-items: center;
-							span {
-								font-size: 18px;
-								@media screen and (max-width: 767px) {
-									font-size: 16px;
-								}
-								color: #333;
-							}
-							&.active {
-								span {
-									font-weight: 700;
-								}
-							}
-						}
-					}
+				
 				}
 				.cl-m-h-right {
 					display: flex;

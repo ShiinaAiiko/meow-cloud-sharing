@@ -20,17 +20,12 @@ import {
 	RunQueue,
 	Debounce,
 } from '@nyanyajs/utils'
-import { MeowWhisperCoreSDK } from '../modules/MeowWhisperCoreSDK'
-import { meowWhisperCore, sakisso } from '../config'
+import {  sakisso } from '../config'
 import { userAgent } from './user'
 import { storage } from './storage'
 import i18n from '../modules/i18n/i18n'
 
 import { snackbar, prompt, alert, multiplePrompts } from '@saki-ui/core'
-import { FriendItem } from './contacts'
-import createSocketioRouter from '../modules/socketio/router'
-import { GroupCache } from './group'
-import { CustomStickersItem } from './emoji'
 import { PathJoin } from '../modules/methods'
 
 export const modeName = 'file'
@@ -57,7 +52,7 @@ export const fileMethods = {
 		}
 	>(modeName + '/uploadFile', ({ parentPath }, thunkAPI) => {
 		return new Promise(async (resolve, reject) => {
-			const { config, mwc, saass } = thunkAPI.getState()
+			const { config,  saass } = thunkAPI.getState()
 			console.log('------uploadFile------')
 
 			let input = document.createElement('input')
@@ -257,48 +252,6 @@ export const fileMethods = {
 			input.click()
 		})
 	}),
-	// GetFilesInTheParentPath: createAsyncThunk<
-	// 	void,
-	// 	{ parentPath: string },
-	// 	{
-	// 		state: RootState
-	// 	}
-	// >(
-	// 	modeName + '/GetFilesorFoldersInTheParentPath',
-	// 	async ({ parentPath }, thunkAPI) => {
-	// 		const { saass, folder } = thunkAPI.getState()
-
-	// 		thunkAPI.dispatch(
-	// 			methods.folder.setList(folder.list.filter((v) => v.type !== 'File'))
-	// 		)
-	// 		const getFileList = await saass.sdk.getFileList(parentPath)
-	// 		console.log('getFileList', getFileList)
-
-	// 		thunkAPI.dispatch(
-	// 			methods.folder.setList(
-	// 				[...thunkAPI.getState().folder.list].concat(
-	// 					getFileList.map((v) => {
-	// 						// console.log(
-	// 						// 	v.parentPath
-	// 						// 		.split('/')
-	// 						// 		.filter((_, i) => {
-	// 						// 			return i > 1
-	// 						// 		})
-	// 						// 		.join('/')
-	// 						// )
-	// 						return {
-	// 							type: 'File',
-	// 							path: PathJoin(v.path, v.fileName),
-	// 							file: {
-	// 								...v,
-	// 							},
-	// 						}
-	// 					})
-	// 				)
-	// 			)
-	// 		)
-	// 	}
-	// ),
 	rename: createAsyncThunk<
 		void,
 		{
@@ -309,7 +262,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/rename', async ({ path, fileName }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 		const t = i18n.t
 		let v = fileName
 		prompt({
@@ -383,7 +336,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/moveToTrash', async ({ path, fileNames }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 
 		const res = await saass.sdk.moveFilesToTrash(path, fileNames)
 		console.log(res)
@@ -430,7 +383,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/restore', async ({ path, fileNames }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 
 		let fns = fileNames.map((v) => v.fileName)
 		const res = await saass.sdk.restoreFile(path, fns)
@@ -480,7 +433,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/delete', async ({ path, fileNames }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 
 		let fns = fileNames.map((v) => v.fileName)
 		const res = await saass.sdk.deleteFiles(path, fns)
@@ -530,7 +483,7 @@ export const fileMethods = {
 	>(
 		modeName + '/setFileSharing',
 		async ({ path, fileNames, status }, thunkAPI) => {
-			const { config, mwc, saass } = thunkAPI.getState()
+			const { config,  saass } = thunkAPI.getState()
 			const t = i18n.t
 
 			const res = await saass.sdk.setFileSharing(path, fileNames, status as any)
@@ -584,7 +537,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/setFilePassword', async ({ path, fileName }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 		const t = i18n.t
 
 		let password = md5(String(new Date().getTime())).substring(0, 6)
@@ -757,7 +710,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/clearFilePassword', async ({ path, fileName }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 		const t = i18n.t
 
 		const res = await saass.sdk.setFilePassword(path, fileName, 'noPassword')
@@ -812,7 +765,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/copy', async ({ path, fileNames, newPath }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 		const t = i18n.t
 		if (path === newPath) {
 			return
@@ -854,7 +807,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/move', async ({ path, fileNames, newPath }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config,  saass } = thunkAPI.getState()
 		const t = i18n.t
 		if (path === newPath) {
 			return

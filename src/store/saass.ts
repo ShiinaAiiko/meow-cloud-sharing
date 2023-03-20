@@ -7,19 +7,19 @@ import {
 import md5 from 'blueimp-md5'
 import store, { ActionParams, methods, RootState } from '.'
 import { PARAMS, protoRoot } from '../protos'
-import { WebStorage, SakiSSOClient, NEventListener } from '@nyanyajs/utils'
-import { MeowWhisperCoreSDK } from '../modules/MeowWhisperCoreSDK'
-import { meowWhisperCore, sakisso } from '../config'
+import {
+	WebStorage,
+	SakiSSOClient,
+	NEventListener,
+	SAaSS,
+} from '@nyanyajs/utils'
+import {   sakisso } from '../config'
 import { userAgent } from './user'
 import { storage } from './storage'
 import { alert, prompt, snackbar } from '@saki-ui/core'
-import { FriendItem } from './contacts'
-import createSocketioRouter from '../modules/socketio/router'
-import { GroupCache } from './group'
 import { getI18n } from 'react-i18next'
 import i18n from '../modules/i18n/i18n'
 import { api } from '../modules/http/api'
-import { SAaSS } from '../modules/saass'
 
 export const modeName = 'saass'
 
@@ -55,7 +55,7 @@ export const saassMethods = {
 			state: RootState
 		}
 	>(modeName + '/Init', (_, thunkAPI) => {
-		const { config, mwc } = thunkAPI.getState()
+		const { config } = thunkAPI.getState()
 		thunkAPI.dispatch(saassMethods.getAppToken())
 	}),
 	getAppToken: createAsyncThunk<
@@ -65,7 +65,7 @@ export const saassMethods = {
 			state: RootState
 		}
 	>(modeName + '/getAppToken', async (_, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 
 		console.log('getAppToken')
 

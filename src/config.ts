@@ -11,12 +11,6 @@ let sakisso = {
 	serverUrl: '',
 }
 let meowLinkApiUrl = ''
-let serverApi = {
-	apiUrl: '',
-}
-let nsocketio = {
-	url: '',
-}
 let staticPathDomain = ''
 let networkTestUrl = ''
 let github = ''
@@ -30,19 +24,8 @@ let meowApps = {
 	jsurl: '',
 	esmjsurl: '',
 }
-let meowWhisperCore = {
-	appId: '',
-	appKey: '',
+let server = {
 	url: '',
-	rsa: {
-		publicKeyStaticUrl: '',
-	},
-	nsocketio: {
-		url: '',
-	},
-	webrtc: {
-		url: '',
-	},
 }
 
 let origin = window.location.origin
@@ -64,8 +47,8 @@ interface Config {
 	networkTestUrl: typeof networkTestUrl
 	sakiui: typeof sakiui
 	meowApps: typeof meowApps
-	meowWhisperCore: typeof meowWhisperCore
 	github: typeof github
+	server: typeof server
 }
 // import configJson from './config.test.json'
 try {
@@ -78,14 +61,12 @@ try {
 		sakisso = configJson.sakisso
 		meowLinkApiUrl = configJson.meowLinkApiUrl
 
-		// serverApi = configJson.serverApi
-		// nsocketio = configJson.nsocketio
 		staticPathDomain = configJson.staticPathDomain
-		networkTestUrl = configJson.networkTestUrl || configJson.meowWhisperCore.url
+		networkTestUrl = configJson.networkTestUrl
 		sakiui = configJson.sakiui
 		meowApps = configJson.meowApps
-		meowWhisperCore = configJson.meowWhisperCore
 		github = configJson.github
+		server = configJson.server
 	}
 } catch (error) {
 	console.log('未添加配置文件.')
@@ -103,6 +84,6 @@ export {
 	origin,
 	meowLinkApiUrl,
 	meowApps,
-	meowWhisperCore,
 	github,
+	server,
 }

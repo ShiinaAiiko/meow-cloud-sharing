@@ -94,7 +94,7 @@ const resources = {
 		},
 		downloadPage: {
 			pageTitle: '下载',
-			sharedAnEncryptedContent: '{{name}} 共享了一个加密的 {{type}}',
+			sharedAnEncryptedContent: '{{name}} 共享了一个加密的{{type}}',
 			getContent: '获取{{type}}',
 			share404: '分享目前不存在，请检查链接',
 		},
@@ -221,7 +221,7 @@ const resources = {
 		},
 		downloadPage: {
 			pageTitle: '下載',
-			sharedAnEncryptedContent: '{{name}} 共享了一個加密的 {{type}}',
+			sharedAnEncryptedContent: '{{name}} 共享了一個加密的{{type}}',
 			getContent: '獲取{{type}}',
 			share404: '分享目前不存在，請檢查鏈接',
 		},

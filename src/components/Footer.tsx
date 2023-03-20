@@ -16,9 +16,6 @@ import store, {
 	AppDispatch,
 	methods,
 	configSlice,
-	contactsSlice,
-	groupSlice,
-	messagesSlice,
 } from '../store'
 import { useTranslation } from 'react-i18next'
 import { bindEvent } from '@saki-ui/core'

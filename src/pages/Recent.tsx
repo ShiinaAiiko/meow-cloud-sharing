@@ -14,7 +14,6 @@ import store, {
 	useAppDispatch,
 	methods,
 	configSlice,
-	messagesSlice,
 	folderSlice,
 } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -24,22 +23,17 @@ import { useTranslation } from 'react-i18next'
 import { Debounce, deepCopy } from '@nyanyajs/utils'
 import { TransitionGroup, CSSTransition } from 'react-transition-group'
 import { eventTarget } from '../store/config'
-import { contact } from '../protos/proto'
-import MessageContainerComponent from '../components/MessageContainer'
-import DeleteMessagesComponent from '../components/DeleteMessages'
 import FileListComponent from '../components/FileList'
 import { DetailComponent } from '../components/Detail'
 import SelectFileListHeaderComponent from '../components/SelectFileListHeader'
 import {
 	byteConvert,
 	download,
-	getDialogueInfo,
 	getLink,
 	Query,
 } from '../modules/methods'
-import MeowWhisperCoreSDK from '../modules/MeowWhisperCoreSDK'
 import moment from 'moment'
-import { FolderItem } from '../modules/saass'
+import { FolderItem } from '@nyanyajs/utils/dist/saass'
 
 const RecentPage = ({ children }: RouterProps) => {
 	const { t, i18n } = useTranslation('recentPage')

@@ -10,7 +10,6 @@ import store, {
 	methods,
 	storageSlice,
 	RootState,
-	mwcSlice,
 } from '.'
 import { UserAgent } from '@nyanyajs/utils/dist/userAgent'
 import nyanyajs from '@nyanyajs/utils'
@@ -73,8 +72,6 @@ export const userSlice = createSlice({
 			state.isLogin = false
 			console.log('useruseruser', state)
 			setTimeout(() => {
-				const { mwc } = store.getState()
-				mwc.sdk?.clear()
 				store.dispatch(storageSlice.actions.init(''))
 			})
 		},
@@ -209,7 +206,6 @@ export const userMethods = {
 			state: RootState
 		}
 	>(modeName + '/login', async (params, thunkAPI) => {
-		const { mwc } = thunkAPI.getState()
 		const { token, deviceId, type, userInfo } = params
 
 		if (token) {
@@ -225,15 +221,8 @@ export const userMethods = {
 			storage.global.setSync('deviceId', deviceId)
 			storage.global.setSync('userInfo', userInfo)
 
-			mwc.cache.userInfo?.set(userInfo?.uid || '', {
-				userInfo: userInfo,
-			})
-
-			mwc.sdk?.setToken(token)
-			mwc.sdk?.setDeviceId(deviceId)
 
 			if (type === 'NewLogin') {
-				await mwc.sdk?.encryption.clear()
 				// await mwc.sdk?.encryption.init()
 				thunkAPI.dispatch(userSlice.actions.setIsLogin(true))
 				// thunkAPI.dispatch(methods.sso.GetAppToken())

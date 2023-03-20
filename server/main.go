@@ -5,11 +5,8 @@ import (
 	"os"
 
 	conf "github.com/ShiinaAiiko/meow-cloud-sharing/server/config"
-	mongodb "github.com/ShiinaAiiko/meow-cloud-sharing/server/db/mongo"
 	redisdb "github.com/ShiinaAiiko/meow-cloud-sharing/server/db/redis"
-	"github.com/ShiinaAiiko/meow-cloud-sharing/server/services/encryption"
 	"github.com/ShiinaAiiko/meow-cloud-sharing/server/services/gin_service"
-	"github.com/ShiinaAiiko/meow-cloud-sharing/server/services/methods"
 
 	"github.com/cherrai/nyanyago-utils/nlog"
 	"github.com/cherrai/nyanyago-utils/nredis"
@@ -72,11 +69,6 @@ func main() {
 	conf.Redisdb.CreateKeys(conf.RedisCacheKeys)
 
 	// Connect to mongodb.
-	mongodb.ConnectMongoDB(conf.Config.Mongodb.Currentdb.Uri, conf.Config.Mongodb.Currentdb.Name)
-	mongodb.ConnectMongoDB(conf.Config.Mongodb.Ssodb.Uri, conf.Config.Mongodb.Ssodb.Name)
-
-	methods.InitAppList()
-	methods.WatchEmailNotification()
 
 	// SSO Init
 	conf.SSO = sso.New(&sso.SakiSsoOptions{
@@ -93,13 +85,6 @@ func main() {
 		ApiVersion: conf.Config.Saass.ApiVersion,
 	})
 
-	// Test()
-	conf.EncryptionClient = encryption.New(encryption.NewOption{
-		RedisClient:     redisdb.Rdb,
-		RsaKeyDelayDays: 10,
-		UserAesKeyMins:  10,
-		TempDataMins:    1,
-	})
 	// socketio_service.Init()
 	gin_service.Init()
 

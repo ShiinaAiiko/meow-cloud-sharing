@@ -1,17 +1,10 @@
 package typings
 
 type Config struct {
-	Server           Server
-	SSO              Sso
-	StaticPathDomain string
-	// SecretChatToken  SecretChatToken
-	MailMessageInterval int64
-	Saass               SAaSS
-	Redis               Redis
-	Mongodb             Mongodb
-	StaticUrlPrefix     string
-	AppList             []AppListItem
-	Turn                Turn
+	Server Server
+	SSO    Sso
+	Saass  SAaSS
+	Redis  Redis
 }
 
 type Server struct {

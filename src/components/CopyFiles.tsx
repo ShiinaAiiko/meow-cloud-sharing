@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { bindEvent } from '../modules/bindEvent'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -10,14 +9,12 @@ import store, {
 	methods,
 	configSlice,
 	userSlice,
-	contactsSlice,
 } from '../store'
 import './CopyFiles.scss'
 import { useTranslation } from 'react-i18next'
-import { prompt, alert, snackbar } from '@saki-ui/core'
+import { prompt, alert, snackbar, bindEvent } from '@saki-ui/core'
 import { eventTarget } from '../store/config'
-import { SyncOff } from './Icon'
-import { FileItem, FolderItem } from '../modules/saass'
+import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
 
 const CopyFilesComponent = () => {
 	const { t, i18n } = useTranslation('myFilesPage')

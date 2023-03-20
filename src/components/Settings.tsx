@@ -10,13 +10,13 @@ import store, {
 	userSlice,
 } from '../store'
 import './Settings.scss'
-import { bindEvent } from '../modules/bindEvent'
+
 
 import { baseUrl, github, sakisso } from '../config'
 
 import moment from 'moment'
 
-import { alert, snackbar } from '@saki-ui/core'
+import { alert, snackbar,bindEvent  } from '@saki-ui/core'
 // console.log(sakiui.bindEvent)
 import { storage } from '../store/storage'
 import { useTranslation } from 'react-i18next'

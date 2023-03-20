@@ -8,17 +8,14 @@ import md5 from 'blueimp-md5'
 import store, { ActionParams, configSlice, methods, RootState } from '.'
 import { PARAMS, protoRoot } from '../protos'
 import { WebStorage, SakiSSOClient, compareUnicodeOrder } from '@nyanyajs/utils'
-import { MeowWhisperCoreSDK } from '../modules/MeowWhisperCoreSDK'
-import { meowWhisperCore, sakisso } from '../config'
+import {   sakisso } from '../config'
 import { userAgent } from './user'
 import { storage } from './storage'
 import { alert, multiplePrompts, prompt, snackbar } from '@saki-ui/core'
-import { FriendItem } from './contacts'
-import createSocketioRouter from '../modules/socketio/router'
-import { GroupCache } from './group'
 import { getI18n } from 'react-i18next'
 import i18n from '../modules/i18n/i18n'
-import { api, FileItem, FolderItem } from '../modules/saass'
+import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
+
 import { PathJoin } from '../modules/methods'
 
 export const modeName = 'folder'
@@ -67,7 +64,7 @@ export const folderMethods = {
 			state: RootState
 		}
 	>(modeName + '/Init', (_, thunkAPI) => {
-		const { config, mwc } = thunkAPI.getState()
+		const { config } = thunkAPI.getState()
 	}),
 	setFileTreeList: createAsyncThunk<
 		void,
@@ -79,7 +76,7 @@ export const folderMethods = {
 			state: RootState
 		}
 	>(modeName + '/setFileTreeList', ({ path, list }, thunkAPI) => {
-		const { config, mwc } = thunkAPI.getState()
+		const { config } = thunkAPI.getState()
 		if (config.fileListSort.name !== 0) {
 			list = [...list].sort((a, b) => {
 				return config.fileListSort.name >= 0
@@ -318,7 +315,7 @@ export const folderMethods = {
 			state: RootState
 		}
 	>(modeName + '/newFolder', async (_, thunkAPI) => {
-		const { config, mwc, saass, folder } = thunkAPI.getState()
+		const { config, saass, folder } = thunkAPI.getState()
 		console.log('newFolder')
 		const t = i18n.t
 		let v = ''
@@ -378,7 +375,7 @@ export const folderMethods = {
 			state: RootState
 		}
 	>(modeName + '/rename', async ({ parentPath, folderName }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 		console.log('rename', parentPath, folderName)
 		const t = i18n.t
 		let v = folderName
@@ -455,7 +452,7 @@ export const folderMethods = {
 	>(
 		modeName + '/moveToTrash',
 		async ({ parentPath, folderNames }, thunkAPI) => {
-			const { config, mwc, saass } = thunkAPI.getState()
+			const { config, saass } = thunkAPI.getState()
 
 			const res = await saass.sdk.moveFoldersToTrash(parentPath, folderNames)
 			console.log(res)
@@ -498,7 +495,7 @@ export const folderMethods = {
 			state: RootState
 		}
 	>(modeName + '/restore', async ({ parentPath, folderNames }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 
 		let fons = folderNames.map((v) => v.folderName)
 		const res = await saass.sdk.restoreFolder(parentPath, fons)
@@ -550,7 +547,7 @@ export const folderMethods = {
 			state: RootState
 		}
 	>(modeName + '/delete', async ({ parentPath, folderNames }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 
 		let fons = folderNames.map((v) => v.folderName)
 		const res = await saass.sdk.deleteFolders(parentPath, fons)
@@ -602,7 +599,7 @@ export const folderMethods = {
 	>(
 		modeName + '/setFolderSharing',
 		async ({ path, folderNames, status }, thunkAPI) => {
-			const { config, mwc, saass } = thunkAPI.getState()
+			const { config, saass } = thunkAPI.getState()
 			const t = i18n.t
 
 			const res = await saass.sdk.setFolderSharing(
@@ -660,7 +657,7 @@ export const folderMethods = {
 			state: RootState
 		}
 	>(modeName + '/setFolderPassword', async ({ path, folderName }, thunkAPI) => {
-		const { config, mwc, saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 		const t = i18n.t
 		let password = md5(String(new Date().getTime())).substring(0, 6)
 
@@ -835,7 +832,7 @@ export const folderMethods = {
 	>(
 		modeName + '/clearFolderPassword',
 		async ({ path, folderName }, thunkAPI) => {
-			const { config, mwc, saass } = thunkAPI.getState()
+			const { config, saass } = thunkAPI.getState()
 			const t = i18n.t
 
 			const res = await saass.sdk.setFolderPassword(
@@ -893,7 +890,7 @@ export const folderMethods = {
 	>(
 		modeName + '/copy',
 		async ({ parentPath, folderNames, newParentPath }, thunkAPI) => {
-			const { config, mwc, saass } = thunkAPI.getState()
+			const { config, saass } = thunkAPI.getState()
 			const t = i18n.t
 			if (parentPath === newParentPath) {
 				return
@@ -934,7 +931,7 @@ export const folderMethods = {
 	>(
 		modeName + '/move',
 		async ({ parentPath, folderNames, newParentPath }, thunkAPI) => {
-			const { config, mwc, saass } = thunkAPI.getState()
+			const { config, saass } = thunkAPI.getState()
 			const t = i18n.t
 			if (parentPath === newParentPath) {
 				return

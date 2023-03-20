@@ -8,16 +8,11 @@ import md5 from 'blueimp-md5'
 import store, { ActionParams, configSlice, methods, RootState } from '.'
 import { PARAMS, protoRoot } from '../protos'
 import { WebStorage, SakiSSOClient, SAaSS, RunQueue } from '@nyanyajs/utils'
-import { MeowWhisperCoreSDK } from '../modules/MeowWhisperCoreSDK'
-import { meowWhisperCore, sakisso } from '../config'
+import {   sakisso } from '../config'
 import { userAgent } from './user'
 import { storage } from './storage'
 import { snackbar } from '@saki-ui/core'
-import { FriendItem } from './contacts'
-import createSocketioRouter from '../modules/socketio/router'
-import { GroupCache } from './group'
 import { t } from 'i18next'
-import { api } from '../modules/electron/api'
 
 export const modeName = 'tools'
 // export let meowWhisperCoreSDK: MeowWhisperCoreSDK | undefined
@@ -36,7 +31,7 @@ export const toolsMethods = {
 			state: RootState
 		}
 	>(modeName + '/init', async (_, thunkAPI) => {
-		const { mwc, contacts, group, user, config } = thunkAPI.getState()
+		const { user, config } = thunkAPI.getState()
 
 		if (config.notification.leval >= 0) {
 			Notification.requestPermission(function (status) {
@@ -83,7 +78,7 @@ export const toolsMethods = {
 	>(
 		modeName + '/sendNotification',
 		async ({ title, body, icon, sound, timeout }, thunkAPI) => {
-			const { mwc, contacts, config, group, user } = thunkAPI.getState()
+			const { config, user } = thunkAPI.getState()
 
 			console.log('发送通知')
 			const n = new Notification(title, {
@@ -97,7 +92,7 @@ export const toolsMethods = {
 			}
 			n.onclick = () => {
 				console.log('点击了通知')
-				api.showWindow()
+				// api.showWindow()
 			}
 			if (timeout !== 0) {
 				setTimeout(() => {

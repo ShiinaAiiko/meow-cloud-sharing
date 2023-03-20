@@ -15,10 +15,9 @@ import { stringify } from 'querystring'
 import axios from 'axios'
 import { resolve } from 'path'
 import { nanoid } from 'nanoid'
-import { sakisso, version, origin, meowWhisperCore } from '../config'
-import { api } from '../modules/electron/api'
+import { sakisso, version, origin } from '../config'
 import { ListItem } from './folder'
-import { FileItem, FolderItem } from '../modules/saass'
+import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
 
 export const modeName = 'config'
 
@@ -87,14 +86,6 @@ let initialState = {
 		settingPage: {
 			visible: false,
 			settingType: '',
-		},
-		indexPage: {
-			mobile: {
-				showNotesListPage: true,
-				showCategoryListPage: true,
-				showPageListPage: false,
-				showPageContentPage: false,
-			},
 		},
 	},
 	version: version,
@@ -259,9 +250,9 @@ export const configSlice = createSlice({
 			storage.systemConfig.setSync('language', state.language)
 
 			// state.lang = getI18n().language
-			api.updateSetting({
-				type: 'language',
-			})
+			// api.updateSetting({
+			// 	type: 'language',
+			// })
 		},
 		setSync: (state, params: ActionParams<boolean>) => {
 			state.sync = params.payload
@@ -357,9 +348,9 @@ export const configSlice = createSlice({
 					JSON.stringify(params.payload)
 				)
 
-				api.updateSetting({
-					type: 'automaticallyStart',
-				})
+				// api.updateSetting({
+				// 	type: 'automaticallyStart',
+				// })
 				// console.log(
 				// 	"await storage.global.get('automaticallyStart')",
 				// 	await storage.global.get('automaticallyStart')
@@ -508,7 +499,6 @@ export const configMethods = {
 		// 获取配置
 		store.dispatch(methods.config.getDeviceType())
 		store.dispatch(methods.config.initLanguage())
-		await thunkAPI.dispatch(methods.config.GetPublicRsaPbk()).unwrap()
 
 		const callSound = await storage.global.get('notification-callSound')
 		thunkAPI.dispatch(
@@ -537,26 +527,6 @@ export const configMethods = {
 		// store.dispatch(methods.config.initSync())
 		// store.dispatch(methods.config.initBackup())
 	}),
-	GetPublicRsaPbk: createAsyncThunk(
-		modeName + '/GetPublicRsaPbk',
-		async (_, thunkAPI) => {
-			await storage.global.getAndSet('publicRsaPbk', async (v) => {
-				if (!v) {
-					const res = await axios({
-						method: 'GET',
-						url: meowWhisperCore.rsa.publicKeyStaticUrl,
-					})
-					if (res.data) {
-						await storage.global.set('publicRsaPbk', res.data)
-						thunkAPI.dispatch(configSlice.actions.setPublicRsaPbk(res.data))
-						return res.data
-					}
-				}
-				thunkAPI.dispatch(configSlice.actions.setPublicRsaPbk(v))
-				return v
-			})
-		}
-	),
 	getDeviceType: createAsyncThunk(
 		modeName + '/getDeviceType',
 		(_, thunkAPI) => {
@@ -581,7 +551,7 @@ export const configMethods = {
 	initLanguage: createAsyncThunk(
 		modeName + '/initLanguage',
 		async (_, thunkAPI) => {
-			store.dispatch(
+			thunkAPI.dispatch(
 				configSlice.actions.setLanguage({
 					language: (await storage.systemConfig.get('language')) || 'system',
 				})
