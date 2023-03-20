@@ -2,8 +2,8 @@
 name="meow-cloud-sharing-server"
 port=16102
 branch="main"
-configFilePath="config.dev.ubuntu.json"
-# configFilePath="config.pro.json"
+# configFilePath="config.dev.ubuntu.json"
+configFilePath="config.pro.json"
 DIR=$(cd $(dirname $0) && pwd)
 allowMethods=("exec stop gitpull protos dockerremove start dockerlogs")
 
