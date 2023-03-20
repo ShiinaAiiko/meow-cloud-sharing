@@ -34,7 +34,12 @@ import {
 	Query,
 } from '../modules/methods'
 import moment from 'moment'
-import { AccessToken, FileItem, FolderItem, SType } from '@nyanyajs/utils/dist/saass'
+import {
+	AccessToken,
+	FileItem,
+	FolderItem,
+	SType,
+} from '@nyanyajs/utils/dist/saass'
 import { ListItem } from '../store/folder'
 
 const DownloadPage = ({ children }: RouterProps) => {
@@ -231,7 +236,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 					)
 					console.log('getFileListWithShortId', fires)
 
-					if (fores.length) {
+					if (fires.length) {
 						l = l.concat(
 							fires.map((v) => {
 								return {
@@ -248,6 +253,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 							})
 						)
 					}
+					console.log('l', l)
 				}
 				break
 
