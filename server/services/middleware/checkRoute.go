@@ -11,6 +11,13 @@ import (
 
 func CheckRouteMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.URL.Path == "/" ||
+			strings.Contains(c.Request.URL.Path, "/favicon.ico") ||
+			strings.Contains(c.Request.URL.Path, "/static/") {
+			// logo
+			c.Next()
+			return
+		}
 		isWSServer := strings.Contains(c.Request.URL.Path, "/socket.io")
 		if isWSServer {
 			c.Set("WsServer", true)

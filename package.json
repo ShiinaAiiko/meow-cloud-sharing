@@ -10,8 +10,8 @@
 		"cache": "cp ./public/package1.json ./node_modules/@saki-ui/core/package.json",
 		"dc": "rm -rf ./node_modules/.cache",
 		"dev": "cp -r ./config.linux.json ./src/config.temp.json && npm run dc && BROWSER=none PORT=16101 react-app-rewired start  --allow-root",
-		"pro": "cp -r ./config.test.pro.json ./src/config.temp.json && npm run dc && BROWSER=none PORT=16101 react-app-rewired start  --allow-root",
-		"build": "react-app-rewired build",
+		"pro": "cp -r ./config.linux.json ./src/config.temp.json && npm run dc && BROWSER=none PORT=16101 react-app-rewired start  --allow-root",
+		"build": "cross-env PUBLIC_URL=/static react-app-rewired build",
 		"serve": "cp -r ../../protos ./protos_temp && cp -r ./config.pro.web.json ./src/config.temp.json && yarn protos && yarn build && serve -l 15311 -s build",
 		"build_to_el": "cross-env PUBLIC_URL=./ react-app-rewired build",
 		"test": "react-app-rewired test",
@@ -41,7 +41,7 @@
 		]
 	},
 	"dependencies": {
-		"@nyanyajs/utils": "^1.0.17",
+		"@nyanyajs/utils": "^1.0.18",
 		"@reduxjs/toolkit": "^1.8.3",
 		"@saki-ui/core": "^1.0.1",
 		"@testing-library/jest-dom": "^5.16.4",
