@@ -50,7 +50,7 @@ start() {
   dockerremove
 
   echo "-> 正在准备相关资源"
-  cp -r ../../protos $DIR/protos_temp
+  cp -r ./protos $DIR/protos_temp
   cp -r ./$webConfigFilePath $DIR/config.pro.temp.json
   # 获取npm配置
   cp -r ~/.npmrc $DIR
@@ -78,12 +78,12 @@ start() {
     -d $name
 
     
-  echo "-> 构建成功后、复制数据出来"
-  docker cp $name:/app/build/ $DIR/server
+  # echo "-> 构建成功后、复制数据出来"
+  # docker cp $name:/app/build/ $DIR/server
 
-  echo "-> 停止运行Docker"
-  stop
-  rm
+  # echo "-> 停止运行Docker"
+  # stop
+  # rm
 
   cd ./server
   ./release.sh start
@@ -124,25 +124,3 @@ main() {
 }
 
 main "$1"
-
-#  "dmg": {
-#  	"contents": [
-#  		{
-#  			"x": 410,
-#  			"y": 150,
-#  			"type": "link",
-#  			"path": "/Applications"
-#  		},
-#  		{
-#  			"x": 130,
-#  			"y": 150,
-#  			"type": "file"
-#  		}
-#  	]
-#  },
-#  "mac": {
-#  	"icon": "build/icons/icon.icns"
-#  },
-#  "win": {
-#  	"icon": "build/icons/icon.ico"
-#  },

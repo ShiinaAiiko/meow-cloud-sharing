@@ -147,10 +147,10 @@ func (res *ResponseType) GetResponse() *ResponseType {
 		res.CnMsg = "请求成功"
 	}
 	if res.Platform == "" {
-		res.Platform = "Meow Whisper<喵言私语>"
+		res.Platform = "Meow Cloud Sharing<喵云共享>"
 	}
 	if res.Author == "" {
-		res.Author = "Metahorizon Lab."
+		res.Author = "Shiina Aiiko"
 	}
 	res.RequestTime = time.Now().Unix()
 

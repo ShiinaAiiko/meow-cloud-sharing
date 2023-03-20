@@ -40,16 +40,19 @@ RUN \
   cd ./protos_temp && \
   protoc --go_out=../protos *.proto && \
   cd .. && \
-  go build -o meow-whisper main.go
+  go build -o meow-cloud-sharing main.go
 
 FROM alpine:3.10
 
 WORKDIR /
 
 COPY --from=BUILD_IMAGE \
-  /app/meow-whisper \
+  /app/meow-cloud-sharing \
   /
+COPY --from=BUILD_IMAGE \
+  /app/build/ \
+  /build
   
 EXPOSE 16102
 
-CMD ["./meow-whisper","--config","config.json"]
+CMD ["./meow-cloud-sharing","--config","config.json"]

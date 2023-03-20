@@ -1,13 +1,11 @@
 package gin_service
 
 import (
-	"net/http"
 	"strconv"
 
 	conf "github.com/ShiinaAiiko/meow-cloud-sharing/server/config"
 	"github.com/ShiinaAiiko/meow-cloud-sharing/server/routers"
 	"github.com/ShiinaAiiko/meow-cloud-sharing/server/services/middleware"
-
 	"github.com/cherrai/nyanyago-utils/nlog"
 	"github.com/gin-gonic/gin"
 )
@@ -51,9 +49,9 @@ func InitRouter() {
 	// 	Router.Use(midFunc)
 	// }
 	// Router.StaticFS("/static", http.Dir("./static"))
-	Router.StaticFS("/static", http.Dir("../build"))
-	Router.StaticFile("/favicon.ico", "../build/favicon.ico")
-	Router.StaticFile("/", "../build/index.html")
+	// Router.StaticFS("/static", http.Dir("./build"))
+	// Router.StaticFile("/favicon.ico", "./build/favicon.ico")
+	// Router.StaticFile("/", "./build/index.html")
 	routers.InitRouter(Router)
 
 }
