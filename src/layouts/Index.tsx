@@ -7,7 +7,7 @@ import {
 	useSearchParams,
 } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import './Chat.scss'
+import './Index.scss'
 import { Header, Settings, Login } from '../components'
 import { useSelector, useStore, useDispatch } from 'react-redux'
 import store, {
@@ -40,12 +40,12 @@ import { DetailModalComponent } from '../components/Detail'
 import { storage } from '../store/storage'
 import { bindEvent } from '@saki-ui/core'
 import md5 from 'blueimp-md5'
-import { sakiui } from '../config'
+import { sakiui, staticPathDomain } from '../config'
 import { deleteFilesOrFolders, Query, restore } from '../modules/methods'
 import { FileItem, FolderItem } from '@nyanyajs/utils/dist/saass'
 // import parserFunc from 'ua-parser-js'
 
-const ChatLayout = ({ children }: RouterProps) => {
+const IndexLayout = ({ children }: RouterProps) => {
 	const [debounce] = useState(new Debounce())
 	const { t, i18n } = useTranslation()
 	// console.log('Index Layout')
@@ -80,7 +80,7 @@ const ChatLayout = ({ children }: RouterProps) => {
 
 	useEffect(() => {
 		const init = async () => {
-			downloadPage && saass.sdk.setBaseUrl('http://192.168.1.104:16100')
+			downloadPage && saass.sdk.setBaseUrl(staticPathDomain)
 			if (user.isInit && user.isLogin) {
 				// console.log('ossssss', user.userAgent)
 				// console.log('user.isInit && user.isLogin')
@@ -647,4 +647,4 @@ const ChatLayout = ({ children }: RouterProps) => {
 	)
 }
 
-export default ChatLayout
+export default IndexLayout

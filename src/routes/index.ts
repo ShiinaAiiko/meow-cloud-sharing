@@ -3,7 +3,7 @@ import RecentPage from '../pages/Recent'
 import RecyclebinPage from '../pages/Recyclebin'
 import DownloadPage from '../pages/Download'
 
-import ChatLayout from '../layouts/Chat'
+import IndexLayout from '../layouts/Index'
 import BaseLayout from '../layouts/Base'
 import { Routers } from '../modules/renderRoutes'
 
@@ -14,7 +14,7 @@ const routes: Routers[] = [
 		path: '/index',
 		title: '首页',
 		exact: true,
-		layout: ChatLayout,
+		layout: IndexLayout,
 		component: MyFilesPage,
 		redirect: '/',
 	},
@@ -22,7 +22,7 @@ const routes: Routers[] = [
 		path: '/',
 		title: '首页',
 		exact: true,
-		layout: ChatLayout,
+		layout: IndexLayout,
 		component: MyFilesPage,
 		// redirect: '/index',
 	},
@@ -30,7 +30,7 @@ const routes: Routers[] = [
 		path: '/recent',
 		title: '最近',
 		exact: true,
-		layout: ChatLayout,
+		layout: IndexLayout,
 		component: RecentPage,
 		// redirect: '/index',
 	},
@@ -38,7 +38,7 @@ const routes: Routers[] = [
 		path: '/dl/:id',
 		title: '下载',
 		exact: true,
-		layout: ChatLayout,
+		layout: IndexLayout,
 		component: DownloadPage,
 		// redirect: '/index',
 	},
@@ -46,7 +46,7 @@ const routes: Routers[] = [
 		path: '/recyclebin',
 		title: '回收站',
 		exact: true,
-		layout: ChatLayout,
+		layout: IndexLayout,
 		component: RecyclebinPage,
 		// redirect: '/index',
 	},
