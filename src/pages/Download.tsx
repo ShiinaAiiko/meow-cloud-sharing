@@ -357,7 +357,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 										src={user?.avatar || ''}
 									></saki-avatar>
 									<span>
-										{(password
+										{(inputPassword
 											? t('sharedAnEncryptedContent', {
 													ns: 'downloadPage',
 											  })
@@ -447,7 +447,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 											src={user?.avatar || ''}
 										></saki-avatar>
 										<span>
-											{(password
+											{(inputPassword
 												? t('sharedAnEncryptedContent', {
 														ns: 'downloadPage',
 												  })
