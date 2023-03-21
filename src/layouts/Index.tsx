@@ -34,6 +34,7 @@ import ShareUrlComponent from '../components/ShareUrl'
 import PreviewFileComponent from '../components/PreviewFile'
 import CopyFilesComponent from '../components/CopyFiles'
 import SelectFileListHeaderComponent from '../components/SelectFileListHeader'
+import DragComponent from '../components/Drag'
 import DirPathComponent from '../components/DirPath'
 
 import { DetailModalComponent } from '../components/Detail'
@@ -391,7 +392,7 @@ const IndexLayout = ({ children }: RouterProps) => {
 												location.pathname === '/recyclebin' ? (
 													<DirPathComponent
 														dirPath={config.dirPath}
-														onClick={(path,index) => {
+														onClick={(path, index) => {
 															if (
 																path === 'myFiles' ||
 																path === 'recent' ||
@@ -640,6 +641,7 @@ const IndexLayout = ({ children }: RouterProps) => {
 					<PreviewFileComponent></PreviewFileComponent>
 					<DetailModalComponent></DetailModalComponent>
 					<CopyFilesComponent></CopyFilesComponent>
+					<DragComponent></DragComponent>
 					<Login />
 				</>
 			</div>

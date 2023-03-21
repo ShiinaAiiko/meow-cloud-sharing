@@ -20,12 +20,18 @@ import {
 	RunQueue,
 	Debounce,
 } from '@nyanyajs/utils'
-import {  sakisso } from '../config'
+import { sakisso } from '../config'
 import { userAgent } from './user'
 import { storage } from './storage'
 import i18n from '../modules/i18n/i18n'
 
-import { snackbar, prompt, alert, multiplePrompts } from '@saki-ui/core'
+import {
+	snackbar,
+	prompt,
+	alert,
+	multiplePrompts,
+	progressBar,
+} from '@saki-ui/core'
 import { PathJoin } from '../modules/methods'
 
 export const modeName = 'file'
@@ -46,24 +52,46 @@ export const fileMethods = {
 		void,
 		{
 			parentPath: string
+			files?: File[]
 		},
 		{
 			state: RootState
 		}
-	>(modeName + '/uploadFile', ({ parentPath }, thunkAPI) => {
+	>(modeName + '/uploadFile', ({ parentPath, files }, thunkAPI) => {
 		return new Promise(async (resolve, reject) => {
-			const { config,  saass } = thunkAPI.getState()
-			console.log('------uploadFile------')
+			const { config, saass } = thunkAPI.getState()
+			console.log('------uploadFile------', parentPath)
+			const t = i18n.t
 
-			let input = document.createElement('input')
-			input.type = 'file'
-			input.multiple = true
-			input.accept = '*'
-			let index = 0
+			const pb = progressBar()
+			pb.open()
+			let filesLength = 0
+			let uploadedNum = 0
+			const setPb = () => {
+				uploadedNum++
+				pb.setProgress({
+					progress: uploadedNum / filesLength,
+				})
+				if (uploadedNum === filesLength) {
+					setTimeout(() => {
+						pb.close()
+					}, 1000)
+				}
+			}
 			const uploaded = async (url: string) => {
 				console.log(url)
 				const { folder } = thunkAPI.getState()
-
+				setPb()
+				snackbar({
+					message: t('uploadedSucceeded', {
+						ns: 'myFilesPage',
+					}),
+					autoHideDuration: 2000,
+					vertical: 'top',
+					horizontal: 'center',
+					backgroundColor: 'var(--saki-default-color)',
+					color: '#fff',
+				}).open()
 				debounce.increase(async () => {
 					await thunkAPI.dispatch(
 						methods.folder.getFileTreeList({
@@ -85,12 +113,12 @@ export const fileMethods = {
 				// 	})
 				// )
 			}
-			const up = async (files: FileList, index: number) => {
+			const up = async (files: File) => {
 				try {
-					if (index >= files.length) {
-						return
-					}
-					let file = files[index]
+					// if (index >= files.length) {
+					// 	return
+					// }
+					let file = files
 					let src = ''
 
 					if (file) {
@@ -153,6 +181,7 @@ export const fileMethods = {
 											async onsuccess(options) {
 												console.log(options)
 												uploaded(data.urls?.domainUrl + options.shortUrl)
+
 												// resolve(data.urls?.domainUrl + options.encryptionUrl)
 												// await store.state.storage.staticFileWS?.getAndSet(
 												// 	upload.data.urls?.encryptionUrl || '',
@@ -183,6 +212,7 @@ export const fileMethods = {
 														backgroundColor: 'var(--saki-default-color)',
 														color: '#fff',
 													}).open()
+												setPb()
 												// store.dispatch('chat/failedToSendMessage', {
 												// 	messageId,
 												// 	dialogId,
@@ -239,17 +269,30 @@ export const fileMethods = {
 					// })
 				}
 			}
-			input.oninput = async (e) => {
-				console.log(input?.files)
-				if (input?.files?.length) {
-					index = 0
-					// up(input?.files, index)
-					for (let i = 0; i < input?.files.length; i++) {
-						up(input?.files, i)
+			if (files?.length) {
+				filesLength = files.length
+				for (let i = 0; i < files.length; i++) {
+					up(files[i])
+				}
+			} else {
+				let input = document.createElement('input')
+				input.type = 'file'
+				input.multiple = true
+				input.accept = '*'
+				let index = 0
+				input.oninput = async (e) => {
+					console.log(input?.files)
+					if (input?.files?.length) {
+						index = 0
+						// up(input?.files, index)
+						filesLength = input?.files.length
+						for (let i = 0; i < input?.files.length; i++) {
+							up(input?.files[i])
+						}
 					}
 				}
+				input.click()
 			}
-			input.click()
 		})
 	}),
 	rename: createAsyncThunk<
@@ -262,15 +305,15 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/rename', async ({ path, fileName }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 		const t = i18n.t
 		let v = fileName
 		prompt({
-			title:  t('rename', {
+			title: t('rename', {
 				ns: 'common',
 			}),
 			value: v,
-			placeholder:  t('typeFileName', {
+			placeholder: t('typeFileName', {
 				ns: 'myFilesPage',
 			}),
 			cancelText: t('cancel', {
@@ -336,7 +379,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/moveToTrash', async ({ path, fileNames }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 
 		const res = await saass.sdk.moveFilesToTrash(path, fileNames)
 		console.log(res)
@@ -383,7 +426,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/restore', async ({ path, fileNames }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 
 		let fns = fileNames.map((v) => v.fileName)
 		const res = await saass.sdk.restoreFile(path, fns)
@@ -433,7 +476,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/delete', async ({ path, fileNames }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 
 		let fns = fileNames.map((v) => v.fileName)
 		const res = await saass.sdk.deleteFiles(path, fns)
@@ -483,7 +526,7 @@ export const fileMethods = {
 	>(
 		modeName + '/setFileSharing',
 		async ({ path, fileNames, status }, thunkAPI) => {
-			const { config,  saass } = thunkAPI.getState()
+			const { config, saass } = thunkAPI.getState()
 			const t = i18n.t
 
 			const res = await saass.sdk.setFileSharing(path, fileNames, status as any)
@@ -537,7 +580,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/setFilePassword', async ({ path, fileName }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 		const t = i18n.t
 
 		let password = md5(String(new Date().getTime())).substring(0, 6)
@@ -710,7 +753,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/clearFilePassword', async ({ path, fileName }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 		const t = i18n.t
 
 		const res = await saass.sdk.setFilePassword(path, fileName, 'noPassword')
@@ -765,7 +808,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/copy', async ({ path, fileNames, newPath }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 		const t = i18n.t
 		if (path === newPath) {
 			return
@@ -807,7 +850,7 @@ export const fileMethods = {
 			state: RootState
 		}
 	>(modeName + '/move', async ({ path, fileNames, newPath }, thunkAPI) => {
-		const { config,  saass } = thunkAPI.getState()
+		const { config, saass } = thunkAPI.getState()
 		const t = i18n.t
 		if (path === newPath) {
 			return

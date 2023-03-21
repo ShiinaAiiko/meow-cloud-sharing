@@ -85,6 +85,8 @@ const resources = {
 			generalMeowLink: '生成喵喵链接',
 			typeFileName: '输入你的文件名',
 			lengthLimited1to50: '文本长度限制为 1 到 50 个字符',
+			draggingFiles: '正在拖拽文件',
+      uploadedSucceeded: '上传成功',
 		},
 		recentPage: {
 			pageTitle: '最近',
@@ -213,6 +215,8 @@ const resources = {
 			generalMeowLink: '生成喵喵鏈接',
 			typeFileName: '輸入你的文件名',
 			lengthLimited1to50: '文本長度限制為 1 到 50 個字符',
+			draggingFiles: '正在拖拽檔案',
+			uploadedSucceeded: '上傳成功',
 		},
 		recentPage: {
 			pageTitle: '最近',
@@ -342,6 +346,8 @@ const resources = {
 			generalMeowLink: 'Generate Meow Link',
 			typeFileName: 'Type in your file name',
 			lengthLimited1to50: 'Text length is limited from 1 to 50 characters',
+			draggingFiles: 'Dragging files',
+			uploadedSucceeded: 'Uploaded successfully!',
 		},
 		recentPage: {
 			pageTitle: 'Recent',
