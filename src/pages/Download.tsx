@@ -357,9 +357,14 @@ const DownloadPage = ({ children }: RouterProps) => {
 										src={user?.avatar || ''}
 									></saki-avatar>
 									<span>
-										{t('sharedAnEncryptedContent', {
-											ns: 'downloadPage',
-										})
+										{(password
+											? t('sharedAnEncryptedContent', {
+													ns: 'downloadPage',
+											  })
+											: t('sharedContent', {
+													ns: 'downloadPage',
+											  })
+										)
 											.replace('{{name}}', user?.nickname || '')
 											.replace(
 												'{{type}}',
@@ -438,14 +443,19 @@ const DownloadPage = ({ children }: RouterProps) => {
 											width='30px'
 											height='30px'
 											margin='0 6px 0 0'
-                      nickname={user?.nickname || ''}
-                      src={user?.avatar || ''}
+											nickname={user?.nickname || ''}
+											src={user?.avatar || ''}
 										></saki-avatar>
 										<span>
-											{t('sharedAnEncryptedContent', {
-												ns: 'downloadPage',
-											})
-											.replace('{{name}}', user?.nickname || '')
+											{(password
+												? t('sharedAnEncryptedContent', {
+														ns: 'downloadPage',
+												  })
+												: t('sharedContent', {
+														ns: 'downloadPage',
+												  })
+											)
+												.replace('{{name}}', user?.nickname || '')
 												.replace(
 													'{{type}}',
 													type === 'File'
