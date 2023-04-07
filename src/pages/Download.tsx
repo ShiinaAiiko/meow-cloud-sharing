@@ -110,6 +110,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 		setLoading(true)
 		if (!params.id) return
 		console.log('pathpath', path)
+		setSelectContents([])
 		switch (type) {
 			case 'File':
 				const fires = await saass.sdk.getFileByShortId(
@@ -209,6 +210,25 @@ const DownloadPage = ({ children }: RouterProps) => {
 					)
 
 					if (!v?.folder || !v.folder?.accessToken) return
+
+					if (
+						Number(v.folder?.accessToken.user) <=
+						Math.round(new Date().getTime() / 1000)
+					) {
+						path === 'downloads'
+							? getData()
+							: navigate?.(
+									Query(
+										location.pathname,
+										{
+											p: 'downloads',
+										},
+										searchParams
+									)
+							  )
+						return
+					}
+
 					let l = [] as ListItem[]
 					const fores = await saass.sdk.getFolderListWithShortId(
 						v.folder?.shortId,
@@ -522,7 +542,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 													{t('download', {
 														ns: 'common',
 													})}{' '}
-													{'(' + downloadNum + ')'}
+													{downloadNum ? '(' + downloadNum + ')' : ''}
 												</span>
 											</saki-button>
 										</div>
@@ -839,7 +859,7 @@ const DownloadPage = ({ children }: RouterProps) => {
 												fontSize: '13px',
 											}}
 										>
-											{t('newTab', {
+											{t('newTabPreviewFile', {
 												ns: 'common',
 											})}
 										</div>

@@ -900,7 +900,7 @@ const FileListComponent = ({
 							fontSize: '13px',
 						}}
 					>
-						{t('newTab', {
+						{t('newTabPreviewFile', {
 							ns: 'common',
 						})}
 					</div>

@@ -63,13 +63,12 @@ export const fileMethods = {
 			console.log('------uploadFile------', parentPath)
 			const t = i18n.t
 
-			const pb = progressBar()
-			pb.open()
+			let pb: ReturnType<typeof progressBar>
 			let filesLength = 0
 			let uploadedNum = 0
 			const setPb = () => {
 				uploadedNum++
-				pb.setProgress({
+				pb?.setProgress({
 					progress: uploadedNum / filesLength,
 				})
 				if (uploadedNum === filesLength) {
@@ -270,6 +269,8 @@ export const fileMethods = {
 				}
 			}
 			if (files?.length) {
+				pb = progressBar()
+				pb.open()
 				filesLength = files.length
 				for (let i = 0; i < files.length; i++) {
 					up(files[i])
@@ -283,6 +284,8 @@ export const fileMethods = {
 				input.oninput = async (e) => {
 					console.log(input?.files)
 					if (input?.files?.length) {
+						pb = progressBar()
+						pb.open()
 						index = 0
 						// up(input?.files, index)
 						filesLength = input?.files.length
