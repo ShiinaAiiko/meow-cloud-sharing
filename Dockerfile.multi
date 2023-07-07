@@ -10,7 +10,7 @@ COPY .yarnrc .npmrc /root/
 COPY package.json yarn.lock ./
 
 RUN \
-  yarn 
+  yarn install --frozen-lockfile --registry https://registry.npm.aiiko.club
 
 COPY . .
 
@@ -18,9 +18,9 @@ RUN \
   cp -r ./config.pro.temp.json ./src/config.temp.json && \
   yarn protos && \
   yarn build && \
-  wget https://saki-ui.aiiko.club/saki-ui.tgz && \
+  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.0.tgz -O saki-ui.tgz && \
   tar zxvf ./saki-ui.tgz -C ./build && \
-  rm -rf ./saki-ui* 
+  rm -rf ./saki-ui* ./saki-ui.tgz
 
 FROM node:16.13.1-alpine3.13
 

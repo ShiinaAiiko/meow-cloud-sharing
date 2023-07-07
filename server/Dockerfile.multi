@@ -49,9 +49,6 @@ WORKDIR /
 COPY --from=BUILD_IMAGE \
   /app/meow-cloud-sharing \
   /
-COPY --from=BUILD_IMAGE \
-  /app/build/ \
-  /build
   
 EXPOSE 16102
 
