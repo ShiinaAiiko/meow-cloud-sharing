@@ -64,40 +64,52 @@ export const fileMethods = {
 			const t = i18n.t
 
 			let pb: ReturnType<typeof progressBar>
+			let fileName = ''
 			let filesLength = 0
 			let uploadedNum = 0
-			const setPb = () => {
-				uploadedNum++
+			let filesList: File[] = []
+			const setPb = (progress: number, onAnimationEnd?: () => void) => {
 				pb?.setProgress({
-					progress: uploadedNum / filesLength,
+					progress: progress || 0,
+					tipText: `(${uploadedNum}/${filesLength}) ${fileName}`,
+					onAnimationEnd,
 				})
-				if (uploadedNum === filesLength) {
-					setTimeout(() => {
-						pb.close()
-					}, 1000)
-				}
 			}
 			const uploaded = async (url: string) => {
 				console.log(url)
 				const { folder } = thunkAPI.getState()
-				setPb()
-				snackbar({
-					message: t('uploadedSucceeded', {
-						ns: 'myFilesPage',
-					}),
-					autoHideDuration: 2000,
-					vertical: 'top',
-					horizontal: 'center',
-					backgroundColor: 'var(--saki-default-color)',
-					color: '#fff',
-				}).open()
-				debounce.increase(async () => {
-					await thunkAPI.dispatch(
-						methods.folder.getFileTreeList({
-							folderPath: parentPath,
-						})
-					)
-				}, 300)
+				uploadedNum++
+				setPb(1, () => {
+					if (uploadedNum === filesLength) {
+						setTimeout(() => {
+							pb.close()
+						}, 1000)
+						return
+					}
+					fileName = '正在加载'
+					setPb(0, () => {
+						up(filesList[uploadedNum])
+					})
+				})
+				if (url) {
+					snackbar({
+						message: `${fileName} ${t('uploadedSucceeded', {
+							ns: 'myFilesPage',
+						})}`,
+						autoHideDuration: 2000,
+						vertical: 'top',
+						horizontal: 'center',
+						backgroundColor: 'var(--saki-default-color)',
+						color: '#fff',
+					}).open()
+					debounce.increase(async () => {
+						await thunkAPI.dispatch(
+							methods.folder.getFileTreeList({
+								folderPath: parentPath,
+							})
+						)
+					}, 300)
+				}
 				// 未来可以优化成单独为此内容添加
 				// thunkAPI.dispatch(
 				// 	methods.folder.setList(
@@ -123,19 +135,48 @@ export const fileMethods = {
 					if (file) {
 						let reader = new FileReader()
 						reader.onload = async (e) => {
+							// let tSize = file.size
+							// let cSize = 0
+							fileName = file.name
+
+							// const timer = setInterval(() => {
+							// 	// progress += 0.01
+							// 	cSize += file.size / 6
+							// 	setPb(cSize / tSize)
+							// 	if (cSize >= tSize) {
+							// 		uploaded('/')
+							// 		clearInterval(timer)
+							// 	}
+							// }, 1000)
 							try {
 								if (!e.target?.result || !file) return
 								const hash = saass.sdk.getHash(e.target.result)
 
+								const fileSuffix = file.name.substring(
+									file.name.lastIndexOf('.') + 1
+								)
+								console.log({
+									folderPath: parentPath,
+									fileName: file.name,
+									fileInfo: {
+										name: file.name,
+										size: file.size,
+										type: file.type || fileSuffix || 'file',
+										fileSuffix: fileSuffix ? '.' + fileSuffix : '',
+										lastModified: file.lastModified,
+										hash: hash,
+									},
+									fileConflict: 'Replace',
+									allowShare: -1,
+								})
 								const res = await saass.sdk.createChunkUpload({
 									folderPath: parentPath,
 									fileName: file.name,
 									fileInfo: {
 										name: file.name,
 										size: file.size,
-										type: file.type,
-										fileSuffix:
-											'.' + file.name.substring(file.name.lastIndexOf('.') + 1),
+										type: file.type || fileSuffix || 'file',
+										fileSuffix: fileSuffix ? '.' + fileSuffix : '',
 										lastModified: file.lastModified,
 										hash: hash,
 									},
@@ -164,7 +205,12 @@ export const fileMethods = {
 											uploadedTotalSize: data.uploadedTotalSize || 0,
 
 											async onprogress(options) {
-												console.log(options)
+												setPb(options.uploadedSize / options.totalSize)
+												console.log(
+													'onprogressoptions',
+													options,
+													(window.navigator as any)['connection'].downlink
+												)
 												// await store.state.storage.staticFileWS.getAndSet(
 												// 	upload.data.urls?.encryptionUrl || '',
 												// 	async (v) => {
@@ -211,7 +257,7 @@ export const fileMethods = {
 														backgroundColor: 'var(--saki-default-color)',
 														color: '#fff',
 													}).open()
-												setPb()
+												uploaded('')
 												// store.dispatch('chat/failedToSendMessage', {
 												// 	messageId,
 												// 	dialogId,
@@ -232,6 +278,7 @@ export const fileMethods = {
 									backgroundColor: 'var(--saki-default-color)',
 									color: '#fff',
 								}).open()
+								uploaded('')
 							}
 						}
 						reader.readAsArrayBuffer(file)
@@ -269,12 +316,20 @@ export const fileMethods = {
 				}
 			}
 			if (files?.length) {
-				pb = progressBar()
+				pb = progressBar({
+					width: '100%',
+					maxWidth: '300px',
+				})
 				pb.open()
 				filesLength = files.length
-				for (let i = 0; i < files.length; i++) {
-					up(files[i])
-				}
+				filesList = [...files]
+				// for (let i = 0; i < files.length; i++) {
+				// 	// up(files[i])
+				// 	tSize += files[i].size
+				// }
+				fileName = '正在加载'
+				setPb(0)
+				up(files[0])
 			} else {
 				let input = document.createElement('input')
 				input.type = 'file'
@@ -284,14 +339,22 @@ export const fileMethods = {
 				input.oninput = async (e) => {
 					console.log(input?.files)
 					if (input?.files?.length) {
-						pb = progressBar()
+						pb = progressBar({
+							width: '100%',
+							maxWidth: '300px',
+						})
 						pb.open()
 						index = 0
 						// up(input?.files, index)
 						filesLength = input?.files.length
 						for (let i = 0; i < input?.files.length; i++) {
-							up(input?.files[i])
+							filesList.push(input?.files[i])
+							// tSize += input?.files[i].size
+							// up(input?.files[i])
 						}
+						fileName = '正在加载'
+						setPb(0)
+						up(input?.files[0])
 					}
 				}
 				input.click()

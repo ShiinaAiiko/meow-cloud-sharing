@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option go_package = "./;protos";
+package saass;
+// import "user.proto";
+
+message GetDownloadUrls {
+  message Request {
+    string shortId = 1;
+    string path = 2;
+  }
+  message Response {}
+}

@@ -77,13 +77,17 @@ start() {
     --restart=always \
     -d $name
 
-    
   # echo "-> 构建成功后、复制数据出来"
   # docker cp $name:/app/build/ $DIR/server
 
   # echo "-> 停止运行Docker"
   # stop
   # rm
+
+  echo "-> 整理文件资源"
+  rm -rf $DIR/build/*
+  docker cp $name:/dist/. $DIR/build
+  stop
 
   cd ./server
   ./release.sh start
@@ -100,6 +104,10 @@ protos() {
   yarn protos
   rm -rf $DIR/protos_temp
   echo "-> 编译Protobuf成功"
+
+  cd ./server
+  ./release.sh protos
+  cd ..
 }
 
 logs() {
