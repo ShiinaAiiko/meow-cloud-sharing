@@ -34,6 +34,7 @@ README.md
 /node_modules
 /src/config.temp.json
 /build
+/dist
 # package-lock.json
 # yarn.lock
 /server

@@ -77,14 +77,8 @@ start() {
     --restart=always \
     -d $name
 
-  # echo "-> 构建成功后、复制数据出来"
-  # docker cp $name:/app/build/ $DIR/server
-
-  # echo "-> 停止运行Docker"
-  # stop
-  # rm
-
   echo "-> 整理文件资源"
+  mkdir -p $DIR/build
   rm -rf $DIR/build/*
   docker cp $name:/dist/. $DIR/build
   stop
