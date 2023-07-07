@@ -7,7 +7,7 @@ branch="main"
 webConfigFilePath="config.pro.web.json"
 registryUrl="https://registry.npmmirror.com/"
 DIR=$(cd $(dirname $0) && pwd)
-allowMethods=("dockerlogs push run protos stop npmconfig install gitpull dockerremove start logs")
+allowMethods=("unzip exec compress downloadSakiUI dockerlogs push run protos stop npmconfig install gitpull dockerremove start logs")
 
 # yarn --registry https://registry.npmmirror.com/
 #  yarn add @nyanyajs/utils @saki-ui/core
@@ -59,6 +59,7 @@ start() {
   echo "-> 准备构建Docker"
   docker build \
     -t $name \
+    -m "2048m" \
     $(cat /etc/hosts | sed 's/^#.*//g' | grep '[0-9][0-9]' | tr "\t" " " | awk '{print "--add-host="$2":"$1 }' | tr '\n' ' ') \
     . \
     -f Dockerfile.multi
@@ -72,6 +73,7 @@ start() {
 
   docker run \
     --name=$name \
+    -m "2048m" \
     $(cat /etc/hosts | sed 's/^#.*//g' | grep '[0-9][0-9]' | tr "\t" " " | awk '{print "--add-host="$2":"$1 }' | tr '\n' ' ') \
     -p $port:$port \
     --restart=always \
@@ -80,11 +82,14 @@ start() {
   echo "-> 整理文件资源"
   mkdir -p $DIR/build
   rm -rf $DIR/build/*
-  docker cp $name:/dist/. $DIR/build
+  rm -rf $DIR/build.tgz
+  # docker cp $name:/build/. $DIR/build
+  docker cp $name:/build.tgz $DIR/build.tgz
   stop
 
-  cd ./server
-  ./release.sh start
+  # 执行ssh命令
+  ./run.sh run
+  rm -rf $DIR/build.tgz
 }
 
 stop() {
@@ -92,16 +97,31 @@ stop() {
   docker rm $name
 }
 
+unzip() {
+  tar -zxvf ./build.tgz -C ./
+}
+
+compress() {
+  tar cvzf /app/build.tgz -C /app build
+}
+
+downloadSakiUI() {
+  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.0.tgz -o saki-ui.tgz
+  tar zxvf ./saki-ui.tgz -C ./build
+  rm -rf ./saki-ui* ./saki-ui.tgz
+}
+
 protos() {
   echo "-> 准备编译Protobuf"
+  mkdir -p ./src/protos
   cp -r ./protos $DIR/protos_temp
   yarn protos
   rm -rf $DIR/protos_temp
   echo "-> 编译Protobuf成功"
 
-  cd ./server
-  ./release.sh protos
-  cd ..
+  # cd ./server
+  # ./release.sh protos
+  # cd ..
 }
 
 logs() {
@@ -111,6 +131,11 @@ logs() {
 push() {
   git tag v$version
   git push origin v$version
+}
+
+exec() {
+  echo $name
+  docker exec -it $name /bin/bash
 }
 
 dockerlogs() {

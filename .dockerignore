@@ -39,3 +39,6 @@ README.md
 # yarn.lock
 /server
 /protos
+*.zip
+build.*
+ssh.*

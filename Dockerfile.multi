@@ -16,11 +16,10 @@ COPY . .
 
 RUN \
   cp -r ./config.pro.temp.json ./src/config.temp.json && \
-  yarn protos && \
+  ./release.sh protos && \
   yarn build && \
-  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.0.tgz -O saki-ui.tgz && \
-  tar zxvf ./saki-ui.tgz -C ./build && \
-  rm -rf ./saki-ui* ./saki-ui.tgz
+  ./release.sh downloadSakiUI && \
+  ./release.sh compress
 
 FROM node:16.13.1-alpine3.13
 
@@ -30,13 +29,14 @@ WORKDIR /
 
 COPY --from=BUILD_IMAGE \
   /app/build \
-  /dist
+  /build
 
 RUN \ 
   npm config set registry https://registry.npmmirror.com && \
-  yarn global add spa-http-server
+  yarn global add spa-http-server && \
+  tar cvzf /build.tgz  -C / build
 
 EXPOSE 16101
 
-CMD ["http-server","./dist","--cors","--silent","-p","16101","--push-state"]
+CMD ["http-server","./build","--cors","--silent","-p","16101","--push-state"]
 
