@@ -88,7 +88,7 @@ start() {
   stop
 
   # 执行ssh命令
-  ./run.sh run
+  ./ssh.sh run
   rm -rf $DIR/build.tgz
 }
 
@@ -106,7 +106,7 @@ compress() {
 }
 
 downloadSakiUI() {
-  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.0.tgz -o saki-ui.tgz
+  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.0.tgz -O saki-ui.tgz
   tar zxvf ./saki-ui.tgz -C ./build
   rm -rf ./saki-ui* ./saki-ui.tgz
 }
