@@ -1,6 +1,6 @@
 module github.com/ShiinaAiiko/meow-cloud-sharing/server
 
-go 1.18
+go 1.22
 
 require (
 	github.com/gin-gonic/gin v1.7.7

@@ -75,6 +75,14 @@ run() {
     -p $port:$port \
     --restart=always \
     -d $runName
+
+  echo "-> 整理文件资源"
+  docker cp $name:/meow-cloud-sharing $DIR/meow-cloud-sharing
+  stop
+
+  ./ssh.sh run
+
+  rm -rf $DIR/meow-cloud-sharing
 }
 
 stop() {
