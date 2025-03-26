@@ -36,7 +36,6 @@ const DirPathComponent = ({
 	}, [])
 	const config = useSelector((state: RootState) => state.config)
 	const dispatch = useDispatch<AppDispatch>()
-	const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
 	return (
 		<div className='dirPath-component'>
 			<div className='ip-dirpath'>

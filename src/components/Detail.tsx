@@ -23,12 +23,6 @@ export const DetailComponent = () => {
 	const folder = useSelector((state: RootState) => state.folder)
 	const sso = useSelector((state: RootState) => state.sso)
 
-	const [noteContextMenuEl, setNoteContextMenuEl] = useState<any>()
-	const [openDropDownMenu, setOpenDropDownMenu] = useState(false)
-	const [openAddDropDownMenu, setOpenAddDropDownMenu] = useState(false)
-	const [openSettingDropDownMenu, setOpenSettingDropDownMenu] = useState(false)
-	const [openUserDropDownMenu, setOpenUserDropDownMenu] = useState(false)
-
 	const [openShareDropDownMenu, setOpenShareDropDownMenu] = useState(false)
 
 	const dispatch = useDispatch<AppDispatch>()
@@ -232,6 +226,7 @@ export const DetailComponent = () => {
 											<saki-dropdown
 												visible={openShareDropDownMenu}
 												floating-direction='Left'
+												z-index='1099'
 												ref={bindEvent({
 													close: (e) => {
 														setOpenShareDropDownMenu(false)

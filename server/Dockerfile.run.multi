@@ -1,0 +1,10 @@
+FROM alpine:3.10
+
+WORKDIR /
+
+COPY meow-cloud-sharing \
+  /
+
+EXPOSE 23203
+
+CMD ["./meow-cloud-sharing","--config","config.json"]

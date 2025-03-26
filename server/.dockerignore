@@ -32,3 +32,5 @@ test.go
 dump.rdb
 /certs
 .air.toml
+go.work*
+ssh*

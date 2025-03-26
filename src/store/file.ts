@@ -172,6 +172,7 @@ export const fileMethods = {
 								const res = await saass.sdk.createChunkUpload({
 									folderPath: parentPath,
 									fileName: file.name,
+									chunkSize: 5242880,
 									fileInfo: {
 										name: file.name,
 										size: file.size,

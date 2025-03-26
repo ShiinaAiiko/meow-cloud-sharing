@@ -59,6 +59,7 @@ start() {
   echo "-> 准备构建Docker"
   docker build \
     -t $name \
+    --network host \
     -m "2048m" \
     $(cat /etc/hosts | sed 's/^#.*//g' | grep '[0-9][0-9]' | tr "\t" " " | awk '{print "--add-host="$2":"$1 }' | tr '\n' ' ') \
     . \
@@ -99,6 +100,7 @@ stop() {
 
 unzip() {
   tar -zxvf ./build.tgz -C ./
+  rm -rf build.tgz
 }
 
 compress() {
@@ -106,7 +108,7 @@ compress() {
 }
 
 downloadSakiUI() {
-  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.0.tgz -O saki-ui.tgz
+  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.1.tgz -O saki-ui.tgz
   tar zxvf ./saki-ui.tgz -C ./build
   rm -rf ./saki-ui* ./saki-ui.tgz
 }

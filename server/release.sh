@@ -1,11 +1,12 @@
 #! /bin/bash
 name="meow-cloud-sharing-server"
+runName="$name-run"
 port=16102
 branch="main"
 # configFilePath="config.dev.ubuntu.json"
 configFilePath="config.pro.json"
 DIR=$(cd $(dirname $0) && pwd)
-allowMethods=("exec stop gitpull protos dockerremove start dockerlogs")
+allowMethods=("runexec run exec stop gitpull protos dockerremove start dockerlogs")
 
 gitpull() {
   echo "-> 正在拉取远程仓库"
@@ -48,9 +49,39 @@ start() {
     -d $name
 }
 
+
+run() {
+  echo "-> 正在启动「${runName}」服务"
+  dockerremove
+
+  echo "-> 准备构建Docker"
+  docker build \
+    -t \
+    $runName \
+    --network host \
+    . \
+    -f Dockerfile.run.multi
+
+  echo "-> 准备运行Docker"
+  stop
+  docker run \
+    -v $DIR/$configFilePath:/config.json \
+    -v $DIR/appList.json:/appList.json \
+    -v $DIR/client:/client \
+    -v $DIR/static:/static \
+    -v /etc/timezone:/etc/timezone:ro \
+    -v /etc/localtime:/etc/localtime:ro \
+    --name=$runName \
+    -p $port:$port \
+    --restart=always \
+    -d $runName
+}
+
 stop() {
   docker stop $name
   docker rm $name
+  docker stop $runName
+  docker rm $runName
 }
 
 protos() {
@@ -64,7 +95,7 @@ protos() {
 }
 
 dockerlogs() {
-  docker logs -f $name
+  docker logs -f $runName
 }
 
 exec() {
