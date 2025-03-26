@@ -47,8 +47,15 @@ start() {
     -p $port:$port \
     --restart=always \
     -d $name
-}
 
+  echo "-> 整理文件资源"
+  docker cp $name:/meow-cloud-sharing $DIR/meow-cloud-sharing
+  stop
+
+  ./ssh.sh run
+
+  rm -rf $DIR/meow-cloud-sharing
+}
 
 run() {
   echo "-> 正在启动「${runName}」服务"
@@ -66,23 +73,12 @@ run() {
   stop
   docker run \
     -v $DIR/$configFilePath:/config.json \
-    -v $DIR/appList.json:/appList.json \
-    -v $DIR/client:/client \
-    -v $DIR/static:/static \
-    -v /etc/timezone:/etc/timezone:ro \
-    -v /etc/localtime:/etc/localtime:ro \
+    -v $DIR/certs:/certs \
     --name=$runName \
     -p $port:$port \
     --restart=always \
     -d $runName
 
-  echo "-> 整理文件资源"
-  docker cp $name:/meow-cloud-sharing $DIR/meow-cloud-sharing
-  stop
-
-  ./ssh.sh run
-
-  rm -rf $DIR/meow-cloud-sharing
 }
 
 stop() {
