@@ -2,6 +2,7 @@
 name="meow-cloud-sharing"
 port=16101
 version=1.0.0
+sakiUIVersion=1.0.10
 branch="main"
 # webConfigFilePath="config.linux.json"
 webConfigFilePath="config.pro.web.json"
@@ -108,7 +109,7 @@ compress() {
 }
 
 downloadSakiUI() {
-  wget https://saki-ui.aiiko.club/packages/saki-ui-v1.0.1.tgz -O saki-ui.tgz
+  wget https://saki-ui.aiiko.club/packages/saki-ui-v$sakiUIVersion.tgz -O saki-ui.tgz
   tar zxvf ./saki-ui.tgz -C ./build
   rm -rf ./saki-ui* ./saki-ui.tgz
 }
@@ -121,9 +122,9 @@ protos() {
   rm -rf $DIR/protos_temp
   echo "-> 编译Protobuf成功"
 
-  # cd ./server
-  # ./release.sh protos
-  # cd ..
+  cd ./server
+  ./release.sh protos
+  cd ..
 }
 
 logs() {
